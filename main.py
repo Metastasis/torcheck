@@ -1,4 +1,4 @@
-from scapy.layers.inet import IP
+from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
 
 LIBNETFILTER_QUEUE_NUM = 1
