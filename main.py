@@ -17,11 +17,12 @@ def main_loop(packet):
 
     if type(transport) == TCP:
         print("[!] tcp")
+	print(transport.dport)
 
-    if type(transport) == TLS:
+    if type(transport.data) == TLS:
         print("[!] tls")
 
-    if type(transport) == SSL2:
+    if type(transport.data) == SSL2:
         print("[!] sslv2")
     print("[--------------------------]")
 
