@@ -2,6 +2,7 @@ from dpkt.ip import IP
 from dpkt.tcp import TCP
 from dpkt.ssl import TLS, SSL2
 from netfilterqueue import NetfilterQueue
+from directory_ips import DA_IP_LIST
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -13,6 +14,9 @@ def egress_loop(packet):
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
 
     transport = network.data
+
+    if network.dst in DA_IP_LIST:
+        print("[!] FOUND DA [!]")
 
     if type(transport) == TCP:
         print("[!] tcp")
