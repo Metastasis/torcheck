@@ -6,8 +6,7 @@ from netfilterqueue import NetfilterQueue
 LIBNETFILTER_QUEUE_NUM = 1
 
 
-def main_loop(packet):
-    packet.accept()
+def egress_loop(packet):
     network = IP(packet.get_payload())
 
     # modify the packet all you want here
@@ -17,17 +16,20 @@ def main_loop(packet):
 
     if type(transport) == TCP:
         print("[!] tcp")
-	print(transport.dport)
+    else:
+        packet.accept()
+        return
 
-    if type(transport.data) == TLS:
-        print("[!] tls")
+    if transport.dport == 443 or transport.dport >= 9000 and transport.dport <= 9100:
+        print("[*] found relevant port: {}".format(transport.dport))
 
-    if type(transport.data) == SSL2:
-        print("[!] sslv2")
+    packet.accept()
+
     print("[--------------------------]")
 
+
 nfqueue = NetfilterQueue()
-nfqueue.bind(LIBNETFILTER_QUEUE_NUM, main_loop)
+nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
 
 try:
     print("[*] waiting for data")

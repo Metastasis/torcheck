@@ -1,2 +1,2 @@
 dpkt==1.9.1
-NetfilterQueue==0.8.1
+stem==1.6.0
