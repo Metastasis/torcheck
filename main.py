@@ -31,6 +31,8 @@ def modify_pkt_rnd(net_packet):
     net = IP(net_packet.get_payload())
 
     for idx in range(10):
+        if len(net.data.data):
+            return net.pack()
         rnd_byte = randrange(0, len(net.data.data))
         new_data = bytearray(net.data.data)
         new_data[rnd_byte] = bytes([randrange(0, 128)])
