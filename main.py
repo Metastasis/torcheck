@@ -44,6 +44,8 @@ def ingress_loop(packet):
 
     if network.src in ip_list:
         packet = modify_pkt_rnd(network)
+        packet.drop()
+        return
 
     packet.accept()
 
