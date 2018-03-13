@@ -26,13 +26,13 @@ def inet_to_str(inet):
 
 
 def modify_pkt_rnd(net_packet):
-    packet = net_packet.data
+    packet = IP(net_packet.get_payload())
 
     for idx in range(10):
         rnd_byte = randrange(0, len(packet.data))
         packet.data[rnd_byte] = bytes([randrange(0, 128)])
 
-    return net_packet.pack()
+    return packet.pack()
 
 
 def ingress_loop(packet):
