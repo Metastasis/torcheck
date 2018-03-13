@@ -26,13 +26,17 @@ def inet_to_str(inet):
 
 
 def modify_pkt_rnd(net_packet):
-    packet = IP(net_packet.get_payload())
+    # net.data is layer 4 packet
+    # so net.data.data is layer 5, i.e. payload of layer 4
+    net = IP(net_packet.get_payload())
 
     for idx in range(10):
-        rnd_byte = randrange(0, len(packet.data))
-        packet.data[rnd_byte] = bytes([randrange(0, 128)])
+        rnd_byte = randrange(0, len(net.data.data))
+        new_data = bytearray(net.data.data)
+        new_data[rnd_byte] = bytes([randrange(0, 128)])
+        net.data.data = new_data
 
-    return packet.pack()
+    return net.pack()
 
 
 def ingress_loop(packet):
