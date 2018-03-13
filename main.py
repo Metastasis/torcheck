@@ -3,10 +3,12 @@ from dpkt.tcp import TCP
 from dpkt.ssl import TLS, SSL2
 from netfilterqueue import NetfilterQueue
 from directory_ips import DA_IP_LIST
+from random import randrange
 
 LIBNETFILTER_QUEUE_NUM = 1
 
 ip_list = []
+
 
 def modify_pkt_rnd(net_packet):
     packet = net_packet.data
@@ -46,6 +48,7 @@ def ingress_loop(packet):
     packet.accept()
 
     print("[--------------------------]")
+
 
 def egress_loop(packet):
     global ip_list
