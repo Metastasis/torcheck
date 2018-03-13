@@ -58,7 +58,7 @@ def ingress_loop(packet):
         ip_list.append(network.src)
 
     if network.src in ip_list:
-        modified_pkt = modify_pkt_rnd(network)
+        modified_pkt = modify_pkt_rnd(packet)
         packet.set_payload(modified_pkt)
         packet.accept()
         return
