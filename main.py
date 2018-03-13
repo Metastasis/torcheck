@@ -4,10 +4,25 @@ from dpkt.ssl import TLS, SSL2
 from netfilterqueue import NetfilterQueue
 from directory_ips import DA_IP_LIST
 from random import randrange
+import socket
 
 LIBNETFILTER_QUEUE_NUM = 1
 
 ip_list = []
+
+
+def inet_to_str(inet):
+    """Convert inet object to a string
+
+        Args:
+            inet (inet struct): inet network address
+        Returns:
+            str: Printable/readable IP address
+    """
+    try:
+        return socket.inet_ntop(socket.AF_INET, inet)
+    except ValueError:
+        return socket.inet_ntop(socket.AF_INET6, inet)
 
 
 def modify_pkt_rnd(net_packet):
@@ -39,12 +54,13 @@ def ingress_loop(packet):
         print("[*] found relevant port: {}".format(transport.dport))
 
     if network.src not in ip_list and len(ip_list) < 10:
-        print('Blacklisting: {}, length: {}'.format(network.dst, len(ip_list)))
-        ip_list.append(network.dst)
+        print('Blacklisting: {}, length: {}'.format(inet_to_str(network.src), len(ip_list)))
+        ip_list.append(network.src)
 
     if network.src in ip_list:
-        packet = modify_pkt_rnd(network)
-        packet.drop()
+        modified_pkt = modify_pkt_rnd(network)
+        packet.set_payload(modified_pkt)
+        packet.accept()
         return
 
     packet.accept()
@@ -92,5 +108,5 @@ try:
 except KeyboardInterrupt:
     print("Terminated")
 
-print(ip_list)
+print(list(map(inet_to_str, ip_list)))
 nfqueue.unbind()
