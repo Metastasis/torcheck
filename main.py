@@ -37,9 +37,11 @@ def modify_pkt_rnd(net_packet):
     for idx in range(10):
         if not len(net.data.data):
             return net.pack()
-        rnd_byte = randrange(0, len(net.data.data))
+        payload_len = net.len - len(net.data)
+        rnd_byte = randrange(0, payload_len)
         new_data = bytearray(net.data.data)
-        new_data[rnd_byte] = bytes([randrange(0, 128)])
+        new_data[rnd_byte] = randrange(0, 128)
+        # new_data[rnd_byte] = bytes([randrange(0, 128)])
         net.data.data = new_data
 
     return net.pack()
@@ -68,7 +70,7 @@ def ingress_loop(packet):
         return
 
     if readable_ip not in ip_list and len(ip_list) < 10:
-        print('Blacklisting: {}, length: {}'.format(inet_to_str(readable_ip), len(ip_list)))
+        print('Blacklisting: {}, length: {}'.format(readable_ip, len(ip_list)))
         ip_list.append(readable_ip)
 
     if readable_ip in ip_list:
