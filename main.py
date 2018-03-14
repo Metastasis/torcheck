@@ -8,7 +8,7 @@ from network_status import get_directory_addresses
 
 LIBNETFILTER_QUEUE_NUM = 1
 
-ip_list = []
+ip_list = {}
 
 # IP protocol field constants
 PROTO_TCP = 6
@@ -42,8 +42,9 @@ def modify_pkt_rnd(net_packet):
     # net.data is layer 4 packet
     # so net.data.data is layer 5 or just a payload of layer 4
     net = IP(net_packet.get_payload())
+    tran_len = len(net.data)
 
-    payload_len = net.len - len(net.data)
+    payload_len = net.len - tran_len
     if not payload_len:
         return net.pack()
 
@@ -51,7 +52,7 @@ def modify_pkt_rnd(net_packet):
     for idx in range(10):
         rnd_byte = randrange(0, payload_len)
         # God, please, i hope there's no off-by-one error
-        new_data[(len(net.data) - payload_len) + rnd_byte] = rnd_byte
+        new_data[(tran_len - payload_len) + rnd_byte] = rnd_byte
         # new_data[rnd_byte] = bytes([rnd_byte])
 
     net.data = new_data
@@ -88,19 +89,17 @@ def ingress_loop(packet):
         packet.accept()
         return
 
-    if readable_ip not in ip_list and len(ip_list) < 10:
-        print('Blacklisting: {}, length: {}'.format(readable_ip, len(ip_list)))
-        ip_list.append(readable_ip)
+    if len(ip_list.keys()) < 10:
+        if readable_ip not in ip_list:
+            print('Blacklisting: {}'.format(readable_ip))
+            ip_list[readable_ip] = 0
 
-    if readable_ip in ip_list:
+        ip_list[readable_ip] += 1
         modified_pkt = modify_pkt_rnd(packet)
         packet.set_payload(modified_pkt)
-        packet.accept()
-        return
 
     packet.accept()
-
-    print("[--------------------------]")
+    return
 
 
 def egress_loop(packet):
