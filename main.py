@@ -15,6 +15,10 @@ ip_list = []
 # TODO #2: check current algo
 # TODO #3: if #2 does not work, try pass all from internal network, but block responses
 
+def is_tor_port(port):
+    return port == 443 or (port >= 9000 and port <= 9100)
+
+
 def inet_to_str(inet):
     """Convert inet object to a string
 
@@ -63,8 +67,9 @@ def ingress_loop(packet):
     # if type(transport) == TCP:
     #     print("[!] tcp")
 
-    if transport.sport == 443 or transport.sport >= 9000 and transport.sport <= 9100:
-        print("[*] found relevant port: {}".format(transport.sport))
+    if not is_tor_port(transport.sport):
+        packet.accept()
+        return
 
     if readable_ip in directories_ip:
         print('[*] found request for an authority, accepting...')
