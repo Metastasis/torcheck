@@ -21,7 +21,7 @@ KNOWN_PROTO = [PROTO_TCP, PROTO_TLS]
 # TODO #3: if #2 does not work, try pass all from internal network, but block responses
 
 def is_tor_port(port):
-    return port == 443 or (port >= 9000 and port <= 9100)
+    return port == 443 or (port >= 9000 and port <= 9100) or (port >= 8000 and port <= 8100)
 
 
 def inet_to_str(inet):
