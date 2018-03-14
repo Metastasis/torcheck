@@ -1,15 +1,19 @@
+import socket
 from dpkt.ip import IP
 from dpkt.tcp import TCP
 from dpkt.ssl import TLS, SSL2
 from netfilterqueue import NetfilterQueue
-from directory_ips import DA_IP_LIST
 from random import randrange
-import socket
+from network_status import get_directory_addresses
 
 LIBNETFILTER_QUEUE_NUM = 1
 
 ip_list = []
 
+
+# TODO: download list of dirs and do not block them
+# TODO #2: check current algo
+# TODO #3: if #2 does not work, try pass all from internal network, but block responses
 
 def inet_to_str(inet):
     """Convert inet object to a string
@@ -43,27 +47,31 @@ def modify_pkt_rnd(net_packet):
 
 def ingress_loop(packet):
     global ip_list
+    global directories_ip
     network = IP(packet.get_payload())
 
     # modify the packet all you want here
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
 
+    readable_ip = inet_to_str(network.src)
     transport = network.data
-
-    if network.src in DA_IP_LIST:
-        print("[!] FOUND DA [!]")
 
     # if type(transport) == TCP:
     #     print("[!] tcp")
 
     if transport.sport == 443 or transport.sport >= 9000 and transport.sport <= 9100:
-        print("[*] found relevant port: {}".format(transport.dport))
+        print("[*] found relevant port: {}".format(transport.sport))
 
-    if network.src not in ip_list and len(ip_list) < 10:
-        print('Blacklisting: {}, length: {}'.format(inet_to_str(network.src), len(ip_list)))
-        ip_list.append(network.src)
+    if readable_ip in directories_ip:
+        print('[*] found request for an authority, accepting...')
+        packet.accept()
+        return
 
-    if network.src in ip_list:
+    if readable_ip not in ip_list and len(ip_list) < 10:
+        print('Blacklisting: {}, length: {}'.format(inet_to_str(readable_ip), len(ip_list)))
+        ip_list.append(readable_ip)
+
+    if readable_ip in ip_list:
         modified_pkt = modify_pkt_rnd(packet)
         packet.set_payload(modified_pkt)
         packet.accept()
@@ -82,9 +90,6 @@ def egress_loop(packet):
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
 
     transport = network.data
-
-    if network.dst in DA_IP_LIST:
-        print("[!] FOUND DA [!]")
 
     # if type(transport) == TCP:
     #     print("[!] tcp")
@@ -108,11 +113,14 @@ def egress_loop(packet):
 nfqueue = NetfilterQueue()
 nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
 
+# FIXME: cause we running filtering and tor client on the same machine
+directories_ip = get_directory_addresses(use_hardcode=True)
+
 try:
     print("[*] waiting for data")
     nfqueue.run()
 except KeyboardInterrupt:
     print("Terminated")
 
-print(list(map(inet_to_str, ip_list)))
+print(ip_list)
 nfqueue.unbind()
