@@ -89,15 +89,14 @@ def ingress_loop(packet):
         packet.accept()
         return
 
-    if len(ip_list.keys()) < 10:
-        if readable_ip not in ip_list:
-            print('Blacklisting: {}'.format(readable_ip))
-            ip_list[readable_ip] = 0
+    if readable_ip not in ip_list:
+        print('Blacklisting: {}'.format(readable_ip))
+        ip_list[readable_ip] = 0
 
-        ip_list[readable_ip] += 1
-        if ip_list[readable_ip] % 3:
-            modified_pkt = modify_pkt_rnd(packet)
-            packet.set_payload(modified_pkt)
+    ip_list[readable_ip] += 1
+    if ip_list[readable_ip] % 3:
+        modified_pkt = modify_pkt_rnd(packet)
+        packet.set_payload(modified_pkt)
 
     packet.accept()
     return
