@@ -13,7 +13,8 @@ ip_list = {}
 # IP protocol field constants
 PROTO_TCP = 6
 PROTO_TLS = 56
-KNOWN_PROTO = [PROTO_TCP, PROTO_TLS]
+PROTO_ISO_IP = 80
+KNOWN_PROTO = [PROTO_TCP, PROTO_TLS, PROTO_ISO_IP]
 
 
 # TODO: download list of dirs and do not block them
