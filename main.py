@@ -10,6 +10,11 @@ LIBNETFILTER_QUEUE_NUM = 1
 
 ip_list = []
 
+# IP protocol field constants
+PROTO_TCP = 6
+PROTO_TLS = 56
+KNOWN_PROTO = [PROTO_TCP, PROTO_TLS]
+
 
 # TODO: download list of dirs and do not block them
 # TODO #2: check current algo
@@ -56,10 +61,16 @@ def modify_pkt_rnd(net_packet):
 def ingress_loop(packet):
     global ip_list
     global directories_ip
+    global KNOWN_PROTO
+
     network = IP(packet.get_payload())
 
     # modify the packet all you want here
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
+
+    if network.p not in KNOWN_PROTO:
+        packet.accept()
+        return
 
     readable_ip = inet_to_str(network.src)
     transport = network.data
