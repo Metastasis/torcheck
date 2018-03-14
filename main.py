@@ -31,18 +31,20 @@ def inet_to_str(inet):
 
 def modify_pkt_rnd(net_packet):
     # net.data is layer 4 packet
-    # so net.data.data is layer 5, i.e. payload of layer 4
+    # so net.data.data is layer 5 or just a payload of layer 4
     net = IP(net_packet.get_payload())
 
+    payload_len = net.len - len(net.data)
+    if not payload_len:
+        return net.pack()
+
+    new_data = bytearray(net.data.data)
     for idx in range(10):
-        if not len(net.data.data):
-            return net.pack()
-        payload_len = net.len - len(net.data)
         rnd_byte = randrange(0, payload_len)
-        new_data = bytearray(net.data.data)
-        new_data[rnd_byte] = randrange(0, 128)
-        # new_data[rnd_byte] = bytes([randrange(0, 128)])
-        net.data.data = new_data
+        new_data[rnd_byte] = rnd_byte
+        # new_data[rnd_byte] = bytes([rnd_byte])
+
+    net.data.data = new_data
 
     return net.pack()
 

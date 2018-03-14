@@ -106,3 +106,8 @@ venv.bak/
 
 # PyCharm
 .idea/
+
+################################
+### PROJECT SPECIFIC IGNORES ###
+################################
+/data/cached-consensus
