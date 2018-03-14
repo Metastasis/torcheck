@@ -71,6 +71,7 @@ def ingress_loop(packet):
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
 
     if network.p not in KNOWN_PROTO:
+        print('[?] unknown protocol: {}'.format(network.p))
         packet.accept()
         return
 
@@ -81,6 +82,7 @@ def ingress_loop(packet):
     #     print("[!] tcp")
 
     if not is_tor_port(transport.sport):
+        print('[?] not relevant port: {}'.format(transport.sport))
         packet.accept()
         return
 
@@ -90,7 +92,7 @@ def ingress_loop(packet):
         return
 
     if readable_ip not in ip_list:
-        print('Blacklisting: {}'.format(readable_ip))
+        print('[!] Blacklisting: {}'.format(readable_ip))
         ip_list[readable_ip] = 0
 
     ip_list[readable_ip] += 1
