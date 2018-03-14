@@ -47,13 +47,14 @@ def modify_pkt_rnd(net_packet):
     if not payload_len:
         return net.pack()
 
-    new_data = bytearray(net.data.data)
+    new_data = bytearray(net.data.pack())
     for idx in range(10):
         rnd_byte = randrange(0, payload_len)
-        new_data[rnd_byte] = rnd_byte
+        # God, please, i hope there's no off-by-one error
+        new_data[(len(net.data) - payload_len) + rnd_byte] = rnd_byte
         # new_data[rnd_byte] = bytes([rnd_byte])
 
-    net.data.data = new_data
+    net.data = new_data
 
     return net.pack()
 
