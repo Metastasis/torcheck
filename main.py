@@ -4,7 +4,7 @@ from dpkt.tcp import TCP
 from dpkt.ssl import TLS, SSL2
 from netfilterqueue import NetfilterQueue
 from random import randrange
-from network_status import get_directory_addresses
+from network_status import get_all_ip
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -19,6 +19,7 @@ KNOWN_PROTO = [PROTO_TCP, PROTO_TLS]
 # TODO: download list of dirs and do not block them
 # TODO #2: check current algo
 # TODO #3: if #2 does not work, try pass all from internal network, but block responses
+# TODO #4: this shit can learn!! download consensus and if ip in the list then apply this technique with counters
 
 def is_tor_port(port):
     return port == 443 or (port >= 9000 and port <= 9100) or (port >= 8000 and port <= 8100)
@@ -62,7 +63,7 @@ def modify_pkt_rnd(net_packet):
 
 def ingress_loop(packet):
     global ip_list
-    global directories_ip
+    global relays_ip
     global KNOWN_PROTO
 
     network = IP(packet.get_payload())
@@ -76,18 +77,15 @@ def ingress_loop(packet):
         return
 
     readable_ip = inet_to_str(network.src)
-    transport = network.data
 
-    # if type(transport) == TCP:
-    #     print("[!] tcp")
+    # transport = network.data
+    # if not is_tor_port(transport.sport):
+    #     print('[?] not relevant port? {}:{}'.format(readable_ip, transport.sport))
+    #     packet.accept()
+    #     return
 
-    if not is_tor_port(transport.sport):
-        print('[?] not relevant port? {}:{}'.format(readable_ip, transport.sport))
-        packet.accept()
-        return
-
-    if readable_ip in directories_ip:
-        print('[*] found request for an authority, accepting...')
+    if readable_ip not in relays_ip:
+        print('[*] not relevant ip (can be a bridge), accepting...')
         packet.accept()
         return
 
@@ -137,8 +135,7 @@ def egress_loop(packet):
 nfqueue = NetfilterQueue()
 nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
 
-# FIXME: cause we running filtering and tor client on the same machine
-directories_ip = get_directory_addresses(use_hardcode=True)
+relays_ip = get_all_ip()
 
 try:
     print("[*] waiting for data")

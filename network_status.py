@@ -2,32 +2,7 @@ from stem import Flag
 from stem.descriptor import DocumentHandler, parse_file
 from stem.descriptor.remote import DescriptorDownloader
 from config import CONSENSUS_PATH
-
-
-def download_consensus():
-    downloader = DescriptorDownloader()
-    consensus = downloader.get_consensus(document_handler=DocumentHandler.DOCUMENT).run()[0]
-
-    with open(CONSENSUS_PATH, 'w') as descriptor_file:
-        descriptor_file.write(str(consensus))
-
-
-def _get_da_ip_from_consensus():
-    consensus = next(parse_file(
-        CONSENSUS_PATH,
-        document_handler=DocumentHandler.DOCUMENT,
-        validate=True
-    ))
-
-    authorities_ip_list = []
-
-    for fingerprint, relay in consensus.routers.items():
-        if Flag.AUTHORITY in relay.flags:
-            # print("%s: %s (%s)" % (fingerprint, relay.address, relay.nickname))
-            authorities_ip_list.append(relay.address)
-
-    return authorities_ip_list
-
+from datetime import datetime
 
 HARDCODED_DIRECTORY_IP_LIST = [
     '37.218.247.217',
@@ -43,20 +18,78 @@ HARDCODED_DIRECTORY_IP_LIST = [
 ]
 
 
-def get_directory_addresses(use_hardcode=False):
-    if use_hardcode:
-        return HARDCODED_DIRECTORY_IP_LIST
+def download_consensus():
+    downloader = DescriptorDownloader()
+    consensus = downloader.get_consensus(document_handler=DocumentHandler.DOCUMENT).run()[0]
 
-    directories_ip = None
+    with open(CONSENSUS_PATH, 'w') as descriptor_file:
+        descriptor_file.write(str(consensus))
+
+
+def get_consensus():
+    consensus = None
 
     try:
         print('Reading cached-consensus')
-        directories_ip = _get_da_ip_from_consensus()
-    except FileNotFoundError:
-        print('Consensus not found. Trying to download...')
-        download_consensus()
-        directories_ip = _get_da_ip_from_consensus()
-    except:
-        return None
+        consensus = next(parse_file(
+            CONSENSUS_PATH,
+            document_handler=DocumentHandler.DOCUMENT,
+            validate=True
+        ))
 
-    return directories_ip
+        if datetime.utcnow() > consensus.valid_until:
+            print('Cached consensus is stale')
+            consensus = None
+    except FileNotFoundError:
+        # TODO: add logging here
+        print('Consensus not found')
+    except ValueError:
+        print('Consensus is invalid')
+    except Exception:
+        pass
+
+    if not consensus:
+        print('Downloading consensus...')
+        download_consensus()
+
+        try:
+            print('Trying read cached-consensus again')
+            consensus = next(parse_file(
+                CONSENSUS_PATH,
+                document_handler=DocumentHandler.DOCUMENT,
+                validate=True
+            ))
+        except FileNotFoundError:
+            raise FileNotFoundError
+        except ValueError:
+            raise ValueError
+        except Exception:
+            raise Exception
+
+    return consensus
+
+
+def get_directory_addresses(use_hardcode=False):
+    # FIXME: cause we running filtering and tor client on the same machine
+    if use_hardcode:
+        return HARDCODED_DIRECTORY_IP_LIST
+
+    authorities_ip_list = []
+    consensus = get_consensus()
+
+    for fingerprint, relay in consensus.routers.items():
+        if Flag.AUTHORITY in relay.flags:
+            # print("%s: %s (%s)" % (fingerprint, relay.address, relay.nickname))
+            authorities_ip_list.append(relay.address)
+
+    return authorities_ip_list
+
+
+def get_all_ip():
+    ip_list = []
+    consensus = get_consensus()
+
+    for fingerprint, relay in consensus.routers.items():
+        ip_list.append(relay.address)
+
+    return ip_list
