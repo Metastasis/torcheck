@@ -94,7 +94,7 @@ def ingress_loop(packet):
         ip_list[readable_ip] = 0
 
     ip_list[readable_ip] += 1
-    if ip_list[readable_ip] % 2:
+    if ip_list[readable_ip] > 2:
         packet.drop()
         return
         # modified_pkt = modify_pkt_rnd(packet)
