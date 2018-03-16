@@ -1,4 +1,5 @@
 from stem import Flag
+from stem.descriptor.remote import FallbackDirectory
 from stem.descriptor import DocumentHandler, parse_file
 from stem.descriptor.remote import DescriptorDownloader
 from config import CONSENSUS_PATH
@@ -93,3 +94,17 @@ def get_all_ip():
         ip_list.append(relay.address)
 
     return ip_list
+
+
+def get_fallbacks():
+    try:
+        fallback_directories = FallbackDirectory.from_remote()
+    except IOError:
+        fallback_directories = FallbackDirectory.from_cache()
+
+    fallback_ips = []
+
+    for fallback in fallback_directories.values():
+        fallback_ips.append(fallback.address)
+
+    return fallback_ips

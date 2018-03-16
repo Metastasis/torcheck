@@ -4,7 +4,7 @@ from dpkt.tcp import TCP
 from dpkt.ssl import TLS, SSL2
 from netfilterqueue import NetfilterQueue
 from random import randrange
-from network_status import get_all_ip
+from network_status import get_all_ip, get_fallbacks
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -64,6 +64,7 @@ def modify_pkt_rnd(net_packet):
 def ingress_loop(packet):
     global ip_list
     global relays_ip
+    global fallback_ip
     global KNOWN_PROTO
 
     network = IP(packet.get_payload())
@@ -83,6 +84,11 @@ def ingress_loop(packet):
     #     print('[?] not relevant port? {}:{}'.format(readable_ip, transport.sport))
     #     packet.accept()
     #     return
+
+    if readable_ip in fallback_ip:
+        print('[*] found request for fallback ip, accepting...')
+        packet.accept()
+        return
 
     if readable_ip not in relays_ip:
         print('[*] not relevant ip (can be a bridge), accepting...')
@@ -136,6 +142,7 @@ nfqueue = NetfilterQueue()
 nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
 
 relays_ip = get_all_ip()
+fallback_ip = get_fallbacks()
 
 try:
     print("[*] waiting for data")
