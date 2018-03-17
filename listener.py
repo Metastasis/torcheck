@@ -26,6 +26,6 @@ if __name__ == '__main__':
             while True:
                 pass
         except KeyboardInterrupt:
-            print('', 'Exiting')
-            ctrl.remove_event_listener(stream_cb, EventType.STREAM)
+            print('Exiting')
+            ctrl.remove_event_listener(stream_cb)
             exit(1)
