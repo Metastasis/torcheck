@@ -1,5 +1,6 @@
 from stem import StreamPurpose
 from stem.control import Controller, EventType
+from sys import exit
 
 
 def stream_cb(event):
@@ -11,7 +12,15 @@ def stream_cb(event):
     print('destination is {}. ({}:{})'.format(event.target, event.target_address, event.target_port))
 
 
-with Controller.from_port(port=9051) as ctrl:
-    ctrl.authenticate()
+if __name__ == '__main__':
+    with Controller.from_port(port=9051) as ctrl:
+        ctrl.authenticate()
 
-    ctrl.add_event_listener(stream_cb, EventType.STREAM)
+        ctrl.add_event_listener(stream_cb, EventType.STREAM)
+
+        try:
+            while True:
+                pass
+        except KeyboardInterrupt:
+            print('Exiting')
+            exit(1)
