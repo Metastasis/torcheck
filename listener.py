@@ -16,11 +16,27 @@ def stream_cb(event):
     print()
 
 
+def orconn_cb(parsed_content, raw_content):
+    print(parsed_content)
+    print()
+
+
+def status_cb(parsed_content, raw_content):
+    print(parsed_content)
+    print()
+
+
 if __name__ == '__main__':
     with Controller.from_port(port=9051) as ctrl:
         ctrl.authenticate()
 
-        ctrl.add_event_listener(stream_cb, EventType.STREAM)
+        # ctrl.add_event_listener(stream_cb, EventType.STREAM)
+
+        ctrl.add_event_listener(orconn_cb, EventType.ORCONN)
+
+        ctrl.add_event_listener(status_cb, EventType.STATUS_CLIENT)
+        ctrl.add_event_listener(status_cb, EventType.STATUS_GENERAL)
+        ctrl.add_event_listener(status_cb, EventType.STATUS_SERVER)
 
         try:
             while True:
