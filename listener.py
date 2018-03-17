@@ -7,7 +7,7 @@ def stream_cb(event):
     if event.purpose != StreamPurpose.USER:
         return
 
-    print('[circiut_id-stream_id] {}-{}'.format(event.curc_id, event.id))
+    print('[circiut_id-stream_id] {}-{}'.format(event.circ_id, event.id))
     print('requester is {}. ({}:{})'.format(event.source_addr, event.source_address, event.source_port))
     print('destination is {}. ({}:{})'.format(event.target, event.target_address, event.target_port))
 
