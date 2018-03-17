@@ -8,8 +8,12 @@ def stream_cb(event):
         return
 
     print('[circiut_id-stream_id] {}-{}'.format(event.circ_id, event.id))
-    print('requester is {}. ({}:{})'.format(event.source_addr, event.source_address, event.source_port))
-    print('destination is {}. ({}:{})'.format(event.target, event.target_address, event.target_port))
+    print('status is {}'.format(event.status))
+    print('requester is {}'.format(event.source_addr))
+    print('destination is {}'.format(event.target))
+    print('reason is {}'.format(event.reason))
+    print('remote reason is {}'.format(event.remote_reason))
+    print()
 
 
 if __name__ == '__main__':
@@ -22,5 +26,6 @@ if __name__ == '__main__':
             while True:
                 pass
         except KeyboardInterrupt:
-            print('Exiting')
+            print('', 'Exiting')
+            ctrl.remove_event_listener(stream_cb, EventType.STREAM)
             exit(1)
