@@ -1,7 +1,7 @@
 import socket
+from dpkt.dpkt import NeedData, UnpackError
+from dpkt.http import Request
 from dpkt.ip import IP
-from dpkt.tcp import TCP
-from dpkt.ssl import TLS, SSL2
 from netfilterqueue import NetfilterQueue
 from random import randrange
 from network_status import get_all_ip, get_fallbacks
@@ -112,6 +112,9 @@ def ingress_loop(packet):
 
 def egress_loop(packet):
     global ip_list
+    global relays_ip
+    global fallback_ip
+    global KNOWN_PROTO
     network = IP(packet.get_payload())
 
     # modify the packet all you want here
@@ -119,27 +122,46 @@ def egress_loop(packet):
 
     transport = network.data
 
-    # if type(transport) == TCP:
-    #     print("[!] tcp")
-
-    if transport.dport == 443 or transport.dport >= 9000 and transport.dport <= 9100:
-        print("[*] found relevant port: {}".format(transport.dport))
-
-    if network.dst not in ip_list and len(ip_list) < 10:
-        print('Blacklisting: {}, length: {}'.format(network.dst, len(ip_list)))
-        ip_list.append(network.dst)
-
-    if network.dst in ip_list:
-        packet.drop()
+    if network.p not in KNOWN_PROTO:
+        print('[?] unknown protocol: {}'.format(network.p))
+        packet.accept()
         return
+
+    readable_ip = inet_to_str(network.dst)
+
+    # transport = network.data
+    # if not is_tor_port(transport.sport):
+    #     print('[?] not relevant port? {}:{}'.format(readable_ip, transport.sport))
+    #     packet.accept()
+    #     return
+
+    try:
+        request = Request(transport.data)
+        print(request)
+    except (NeedData, UnpackError):
+        pass
+
+    # if readable_ip in fallback_ip:
+    #     print('[*] found request for fallback ip, accepting...')
+    #     packet.accept()
+    #     return
+
+    # if readable_ip not in ip_list:
+    #     print('[!] Blacklisting: {}'.format(readable_ip))
+    #     ip_list[readable_ip] = 0
+
+    # ip_list[readable_ip] += 1
+    # if ip_list[readable_ip] > 2:
+    #     packet.drop()
+    #     return
+        # modified_pkt = modify_pkt_rnd(packet)
+        # packet.set_payload(modified_pkt)
 
     packet.accept()
 
-    print("[--------------------------]")
-
 
 nfqueue = NetfilterQueue()
-nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
+nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
 
 relays_ip = get_all_ip()
 fallback_ip = get_fallbacks()
