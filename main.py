@@ -73,10 +73,10 @@ def ingress_loop(packet):
     # modify the packet all you want here
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
 
-    if network.p not in KNOWN_PROTO:
-        print('[?] unknown protocol: {}'.format(network.p))
-        packet.accept()
-        return
+    # if network.p not in KNOWN_PROTO:
+    #     print('[?] unknown protocol: {}'.format(network.p))
+    #     packet.accept()
+    #     return
 
     readable_ip = inet_to_str(network.src)
 
@@ -162,7 +162,7 @@ def egress_loop(packet):
 
 
 nfqueue = NetfilterQueue()
-nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
+nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
 
 # relays_ip = get_all_ip()
 # fallback_ip = get_fallbacks()
