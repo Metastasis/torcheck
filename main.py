@@ -68,6 +68,7 @@ def ingress_loop(packet):
     global KNOWN_PROTO
 
     network = IP(packet.get_payload())
+    transport = network.data
 
     # modify the packet all you want here
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
@@ -79,30 +80,36 @@ def ingress_loop(packet):
 
     readable_ip = inet_to_str(network.src)
 
+    try:
+        request = Request(transport.data)
+        print(request)
+    except (NeedData, UnpackError):
+        pass
+
     # transport = network.data
     # if not is_tor_port(transport.sport):
     #     print('[?] not relevant port? {}:{}'.format(readable_ip, transport.sport))
     #     packet.accept()
     #     return
 
-    if readable_ip in fallback_ip:
-        print('[*] found request for fallback ip, accepting...')
-        packet.accept()
-        return
-
-    if readable_ip not in relays_ip:
-        print('[*] not relevant ip (can be a bridge), accepting...')
-        packet.accept()
-        return
-
-    if readable_ip not in ip_list:
-        print('[!] Blacklisting: {}'.format(readable_ip))
-        ip_list[readable_ip] = 0
-
-    ip_list[readable_ip] += 1
-    if ip_list[readable_ip] > 2:
-        packet.drop()
-        return
+    # if readable_ip in fallback_ip:
+    #     print('[*] found request for fallback ip, accepting...')
+    #     packet.accept()
+    #     return
+    #
+    # if readable_ip not in relays_ip:
+    #     print('[*] not relevant ip (can be a bridge), accepting...')
+    #     packet.accept()
+    #     return
+    #
+    # if readable_ip not in ip_list:
+    #     print('[!] Blacklisting: {}'.format(readable_ip))
+    #     ip_list[readable_ip] = 0
+    #
+    # ip_list[readable_ip] += 1
+    # if ip_list[readable_ip] > 2:
+    #     packet.drop()
+    #     return
         # modified_pkt = modify_pkt_rnd(packet)
         # packet.set_payload(modified_pkt)
 
@@ -135,12 +142,6 @@ def egress_loop(packet):
     #     packet.accept()
     #     return
 
-    try:
-        request = Request(transport.data)
-        print(request)
-    except (NeedData, UnpackError):
-        pass
-
     # if readable_ip in fallback_ip:
     #     print('[*] found request for fallback ip, accepting...')
     #     packet.accept()
@@ -163,8 +164,8 @@ def egress_loop(packet):
 nfqueue = NetfilterQueue()
 nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
 
-relays_ip = get_all_ip()
-fallback_ip = get_fallbacks()
+# relays_ip = get_all_ip()
+# fallback_ip = get_fallbacks()
 
 try:
     print("[*] waiting for data")
