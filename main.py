@@ -28,13 +28,14 @@ def ingress_loop(packet):
     #     packet.accept()
     #     return
 
-    readable_ip = inet_to_str(network.src)
-    flow = (network.src, transport.sport, network.dst, transport.dport)
+    src_ip = inet_to_str(network.src)
+    dst_ip = inet_to_str(network.src)
+    flow = (src_ip, transport.sport, dst_ip, transport.dport)
 
-    if flow not in connections:
-        connections[flow] = b''
-
-    connections[flow] = connections[flow] + transport.data
+    if flow in connections:
+        connections[flow] = connections[flow] + transport.data
+    else:
+        connections[flow] = transport.data
 
     try:
         stream = connections[flow]
@@ -71,13 +72,14 @@ def egress_loop(packet):
 
     transport = network.data
 
-    readable_ip = inet_to_str(network.dst)
-    flow = (network.src, transport.sport, network.dst, transport.dport)
+    src_ip = inet_to_str(network.src)
+    dst_ip = inet_to_str(network.src)
+    flow = (src_ip, transport.sport, dst_ip, transport.dport)
 
-    if flow not in connections:
-        connections[flow] = b''
-
-    connections[flow] = connections[flow] + transport.data
+    if flow in connections:
+        connections[flow] = connections[flow] + transport.data
+    else:
+        connections[flow] = transport.data
 
     try:
         stream = connections[flow]
@@ -113,5 +115,5 @@ try:
 except KeyboardInterrupt:
     print("Terminated")
 
-print(ip_list)
+print(connections.keys())
 nfqueue.unbind()
