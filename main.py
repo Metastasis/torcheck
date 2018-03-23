@@ -119,7 +119,7 @@ except KeyboardInterrupt:
 print(connections.keys())
 
 for flow, stream in connections.items():
-    fname = '{}:{}_{}:{}'.format(flow[0], flow[1], flow[2], flow[4])
+    fname = '{}:{}_{}:{}'.format(flow[0], flow[1], flow[2], flow[3])
 
     with open('./tmp' + fname, 'w') as fp:
         dump(fp, stream)
