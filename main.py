@@ -3,6 +3,7 @@ from dpkt.http import Request, Response
 from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str
+from dump import dump
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -116,4 +117,11 @@ except KeyboardInterrupt:
     print("Terminated")
 
 print(connections.keys())
+
+for flow, stream in connections.items():
+    fname = '{}:{}_{}:{}'.format(flow[0], flow[1], flow[2], flow[4])
+
+    with open('./tmp' + fname, 'w') as fp:
+        dump(fp, stream)
+
 nfqueue.unbind()
