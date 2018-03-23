@@ -6,13 +6,10 @@ def dump(fp, stream):
     cnt = 0
     line = ''
 
-    for byte in stream:
-        try:
-            char = byte.encode('ascii')
-        except:
-            char = byte.hex()
+    for byte in bytearray(stream):
+        char = chr(byte)
 
-        if char == ' ' or char == '20':
+        if char == ' ':
             char = '.'
 
         cnt = cnt + 1
