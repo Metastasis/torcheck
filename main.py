@@ -77,7 +77,7 @@ def egress_loop(packet):
     dst_ip = inet_to_str(network.dst)
     flow = (src_ip, transport.sport, dst_ip, transport.dport)
 
-    if flow[4] not in [80]:
+    if flow[3] not in [80]:
         packet.accept()
         return
 
@@ -115,8 +115,11 @@ try:
 except KeyboardInterrupt:
     print("Terminated")
 
-print(connections.keys())
+print('========= flows =========')
+for f, s in connections.items():
+    flow_addresses = '{}:{}_{}:{}'.format(f[0], f[1], f[2], f[3])
+    print(flow_addresses)
 
-# save_connections(connections)
+save_connections(connections)
 
 nfqueue.unbind()
