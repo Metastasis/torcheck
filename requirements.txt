@@ -1,2 +1,4 @@
 dpkt==1.9.1
-stem==1.6.0
+#scapy==2.4.0rc5.dev5
+stem==1.6.0.dev0
+NetfilterQueue=0.8.1

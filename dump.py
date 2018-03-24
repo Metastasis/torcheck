@@ -26,6 +26,13 @@ def dump(fp, stream):
         fp.write(line)
 
 
+def save_connections(connections):
+    for flow, stream in connections.items():
+        fname = '{}:{}_{}:{}'.format(flow[0], flow[1], flow[2], flow[3])
+
+        with open('./tmp/' + fname, 'w') as fp:
+            dump(fp, stream)
+
 # if __name__ == '__main__':
 #     stream = b'\x31\x32\x34\x43\x39\x33\x67\x68\x69\x50\x78\x77\x66\x33\x29'
 #     fname = 'test.txt'
