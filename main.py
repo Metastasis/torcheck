@@ -82,9 +82,6 @@ def egress_loop(packet):
     if flow[3] not in [80]:
         return packet.accept()
 
-    bad_ip = src_ip in blacklist or dst_ip in blacklist
-    bad_host = None
-
     if flow in connections:
         connections[flow] = connections[flow] + transport.data
     else:
@@ -93,14 +90,22 @@ def egress_loop(packet):
     try:
         stream = connections[flow]
         http = Request(stream)
+        if src_ip in blacklist:
+            bad_ip = src_ip
+        elif dst_ip in blacklist:
+            bad_ip = dst_ip
+        else:
+            bad_ip = 'not listed'
+
         bad_host = urlparse(http.headers['host']).hostname
 
         print(flow)
         print(http.headers['host'], ' ', http.uri)
+        print(bad_host)
         print()
 
-        if bad_host and bad_host in blacklist:
-            print('found blacklisted host: {}, ip (real): {}, ip (blacklisted): {}'.format(bad_host, dst_ip, bad_ip))
+        if bad_host in blacklist:
+            print('found blacklisted host: {}, IP: {}, IP (blacklist): {}'.format(bad_host, dst_ip, bad_ip))
             del connections[flow]
             return packet.drop()
 
@@ -118,7 +123,7 @@ def egress_loop(packet):
 
 blacklist = Blacklist()
 blacklist.load()
-
+print(blacklist.data)
 nfqueue = NetfilterQueue()
 nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
 
