@@ -94,7 +94,7 @@ def egress_loop(packet):
     try:
         stream = connections[flow]
         http = Request(stream)
-        bad_host = urlparse(http.host).hostname
+        bad_host = urlparse(http.headers['host']).hostname
 
         print(flow)
         print(http.host, ' ', http.uri)
