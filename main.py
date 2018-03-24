@@ -121,7 +121,7 @@ def egress_loop(packet):
 
 blacklist = Blacklist()
 blacklist.load()
-print(blacklist.data)
+
 nfqueue = NetfilterQueue()
 nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
 
