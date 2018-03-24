@@ -5,7 +5,6 @@ from netfilterqueue import NetfilterQueue
 from utils import inet_to_str
 from dump import save_connections
 from blacklist import Blacklist
-from urllib.parse import urlparse
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -97,11 +96,10 @@ def egress_loop(packet):
         else:
             bad_ip = 'not listed'
 
-        bad_host = urlparse(http.headers['host']).hostname
+        bad_host = http.headers['host']
 
         print(flow)
-        print(http.headers['host'], ' ', http.uri)
-        print(bad_host)
+        print(bad_host, ' ', http.uri)
         print()
 
         if bad_host in blacklist:
