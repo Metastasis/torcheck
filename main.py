@@ -80,8 +80,7 @@ def egress_loop(packet):
     #     return
 
     if flow[3] not in [80]:
-        packet.accept()
-        return
+        return packet.accept()
 
     bad_ip = src_ip in blacklist or dst_ip in blacklist
     bad_host = None
@@ -109,8 +108,8 @@ def egress_loop(packet):
     except UnpackError:
         pass
 
-    if (bad_ip in blacklist) and (bad_host and bad_host in blacklist):
-        print('found blacklisted host: {}, ip: {}'.format(bad_host, bad_ip))
+    if bad_host and bad_host in blacklist:
+        print('found blacklisted host: {}, ip (real): {}, ip (blacklisted): {}'.format(bad_host, dst_ip, bad_ip))
         del connections[flow]
         return packet.drop()
 
