@@ -97,7 +97,7 @@ def egress_loop(packet):
         bad_host = urlparse(http.headers['host']).hostname
 
         print(flow)
-        print(http.host, ' ', http.uri)
+        print(http.headers['host'], ' ', http.uri)
         print()
 
         # If we reached this part an exception hasn't been thrown
