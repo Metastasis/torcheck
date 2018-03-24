@@ -99,6 +99,11 @@ def egress_loop(packet):
         print(http.headers['host'], ' ', http.uri)
         print()
 
+        if bad_host and bad_host in blacklist:
+            print('found blacklisted host: {}, ip (real): {}, ip (blacklisted): {}'.format(bad_host, dst_ip, bad_ip))
+            del connections[flow]
+            return packet.drop()
+
         # If we reached this part an exception hasn't been thrown
         stream = stream[len(http):]
         if len(stream) == 0:
@@ -107,11 +112,6 @@ def egress_loop(packet):
             connections[flow] = stream
     except UnpackError:
         pass
-
-    if bad_host and bad_host in blacklist:
-        print('found blacklisted host: {}, ip (real): {}, ip (blacklisted): {}'.format(bad_host, dst_ip, bad_ip))
-        del connections[flow]
-        return packet.drop()
 
     packet.accept()
 
