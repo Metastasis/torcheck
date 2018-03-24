@@ -1,18 +1,15 @@
-from dpkt.dpkt import NeedData, UnpackError
+from dpkt.dpkt import UnpackError
 from dpkt.http import Request, Response
 from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str
 from dump import save_connections
+from blacklist import Blacklist
+from urllib.parse import urlparse
 
 LIBNETFILTER_QUEUE_NUM = 1
 
-ip_list = {}
 connections = {}
-# IP protocol field constants
-PROTO_TCP = 6
-PROTO_TLS = 56
-KNOWN_PROTO = [PROTO_TCP, PROTO_TLS]
 
 
 def ingress_loop(packet):
@@ -65,6 +62,7 @@ def ingress_loop(packet):
 
 def egress_loop(packet):
     global connections
+    global blacklist
 
     network = IP(packet.get_payload())
 
@@ -77,9 +75,16 @@ def egress_loop(packet):
     dst_ip = inet_to_str(network.dst)
     flow = (src_ip, transport.sport, dst_ip, transport.dport)
 
+    # if flow[3] in [443]:
+    #     packet.drop()
+    #     return
+
     if flow[3] not in [80]:
         packet.accept()
         return
+
+    bad_ip = src_ip in blacklist or dst_ip in blacklist
+    bad_host = None
 
     if flow in connections:
         connections[flow] = connections[flow] + transport.data
@@ -89,8 +94,10 @@ def egress_loop(packet):
     try:
         stream = connections[flow]
         http = Request(stream)
+        bad_host = urlparse(http.host).hostname
+
         print(flow)
-        print(http.method, http.uri)
+        print(http.host, ' ', http.uri)
         print()
 
         # If we reached this part an exception hasn't been thrown
@@ -102,9 +109,16 @@ def egress_loop(packet):
     except UnpackError:
         pass
 
-    packet.accept()
-    return
+    if (bad_ip in blacklist) and (bad_host and bad_host in blacklist):
+        print('found blacklisted host: {}, ip: {}'.format(bad_host, bad_ip))
+        del connections[flow]
+        return packet.drop()
 
+    packet.accept()
+
+
+blacklist = Blacklist()
+blacklist.load()
 
 nfqueue = NetfilterQueue()
 nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
@@ -120,6 +134,6 @@ for f, s in connections.items():
     flow_addresses = '{}:{}_{}:{}'.format(f[0], f[1], f[2], f[3])
     print(flow_addresses)
 
-save_connections(connections)
+# save_connections(connections)
 
 nfqueue.unbind()
