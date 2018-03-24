@@ -74,8 +74,12 @@ def egress_loop(packet):
     transport = network.data
 
     src_ip = inet_to_str(network.src)
-    dst_ip = inet_to_str(network.src)
+    dst_ip = inet_to_str(network.dst)
     flow = (src_ip, transport.sport, dst_ip, transport.dport)
+
+    if flow[4] not in [80]:
+        packet.accept()
+        return
 
     if flow in connections:
         connections[flow] = connections[flow] + transport.data
@@ -84,11 +88,9 @@ def egress_loop(packet):
 
     try:
         stream = connections[flow]
-        print(transport.data)
         http = Request(stream)
+        print(flow)
         print(http.method, http.uri)
-
-        print(http)
         print()
 
         # If we reached this part an exception hasn't been thrown
