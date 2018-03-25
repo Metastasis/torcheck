@@ -1,8 +1,6 @@
 import socket
 from dpkt.ip import IP
 from random import randrange
-from dpkt.dpkt import NeedData, UnpackError
-from dpkt.http import Request, Response
 
 
 def modify_pkt_rnd(net_packet):
@@ -44,27 +42,37 @@ def inet_to_str(inet):
     except ValueError:
         return socket.inet_ntop(socket.AF_INET6, inet)
 
+def dump(fp, stream):
+    if not fp:
+        return None
 
-def parse_http_stream(raw_stream):
-    rest_stream = raw_stream
+    per_line = 10
+    cnt = 0
+    line = ''
 
-    try:
-        stream = rest_stream
-        if stream[:4] == 'HTTP':
-            http = Response(stream)
-            # print(http.status)
-        else:
-            http = Request(stream)
-            # print(http.method, http.uri)
+    for byte in bytearray(stream):
+        char = chr(byte)
 
-        print(http)
-        print()
+        if char == ' ':
+            char = '.'
 
-        # If we reached this part an exception hasn't been thrown
-        stream = stream[len(http):]
-        if len(stream) == 0:
-            return
-        else:
-            rest_stream = stream
-    except UnpackError:
-        pass
+        cnt = cnt + 1
+        line = line + char
+
+        if not (cnt % per_line):
+            line = line + '\n'
+            fp.write(line)
+            cnt = 0
+            line = ''
+
+    if line:
+        line = line + '\n'
+        fp.write(line)
+
+
+def save_connections(connections):
+    for flow, stream in connections.items():
+        fname = '{}:{}_{}:{}'.format(flow[0], flow[1], flow[2], flow[3])
+
+        with open('./tmp/' + fname, 'w') as fp:
+            dump(fp, stream)

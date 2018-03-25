@@ -1,8 +1,23 @@
-one of OR addresses 91.229.20.27:9001
-
-check this relay search (do they have API?)
-
+### relay search
 https://metrics.torproject.org/rs.html
 
-DA's list
-https://metrics.torproject.org/rs.html#search/flag:authority
+
+### DA's list
+https://metrics.torproject.org/rs.html#search/flag\:authority
+
+
+### General
+
+Create installation instructions
+
+##### main.py
+
+Add closures in *_loop functions in order to save\pass global variables in initialization. 
+Maybe create singleton for this purpose.
+
+Encapsulate packet decisions logic in class.
+
+##### blacklist.py
+
+- add incremental\diff updates of blacklist
+- write tests
