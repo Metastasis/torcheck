@@ -17,7 +17,7 @@ def stream_cb(event):
 
 
 def circ_cb(event):
-    print('status: {}'.format(event.status))
+    print('status: {}, id'.format(event.status, event.id))
     print('path: {}'.format(event.path))
     print('purpose: {}'.format(event.purpose))
     print()
