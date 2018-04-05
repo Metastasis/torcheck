@@ -20,6 +20,7 @@ def circ_cb(event):
     print('status: {}, id'.format(event.status, event.id))
     print('path: {}'.format(event.path))
     print('purpose: {}'.format(event.purpose))
+    print('reason: {}, remote reason'.format(event.reason, event.remote_reason))
     print()
 
 
