@@ -28,7 +28,7 @@ if __name__ == '__main__':
     with Controller.from_port(port=9051) as ctrl:
         ctrl.authenticate()
 
-        ctrl.add_event_listener(circ_cb, EventType.CIRC)
+        ctrl.add_event_listener(stream_cb, EventType.STREAM)
 
         try:
             while True:
