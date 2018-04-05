@@ -1,4 +1,4 @@
-from stem import StreamPurpose
+from stem import StreamPurpose, CircStatus
 from stem.control import Controller, EventType
 from sys import exit
 
@@ -16,11 +16,18 @@ def stream_cb(event):
     print()
 
 
+def circ_cb(event):
+    print('status: {}'.format(event.status))
+    print('path: {}'.format(event.path))
+    print('purpose: {}'.format(event.purpose))
+    print()
+
+
 if __name__ == '__main__':
     with Controller.from_port(port=9051) as ctrl:
         ctrl.authenticate()
 
-        ctrl.add_event_listener(stream_cb, EventType.STREAM)
+        ctrl.add_event_listener(circ_cb, EventType.CIRC)
 
         try:
             while True:
