@@ -4,15 +4,10 @@ from sys import exit
 
 
 def stream_cb(event):
-    if event.purpose != StreamPurpose.USER:
-        return
-
     print('[circiut_id-stream_id] {}-{}'.format(event.circ_id, event.id))
-    print('status is {}'.format(event.status))
-    print('requester is {}'.format(event.source_addr))
-    print('destination is {}'.format(event.target))
-    print('reason is {}'.format(event.reason))
-    print('remote reason is {}'.format(event.remote_reason))
+    print('status is {}, reason: {}'.format(event.status, event.reason))
+    print('src is {}'.format(event.source))
+    print('dst is {}'.format(event.target))
     print()
 
 
