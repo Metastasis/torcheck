@@ -36,6 +36,9 @@ def egress_loop(packet):
     else:
         connections[flow] = transport.data
 
+    flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
+    print(flow_addresses)
+
     if transport.dport not in [80]:
         return packet.accept()
 
@@ -90,10 +93,10 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Terminated")
 
-    print('========= egress flows =========')
-    for f, s in connections.items():
-        flow_addresses = '{}:{},{}:{}'.format(f[0], f[1], f[2], f[3])
-        print(flow_addresses)
+    # print('========= egress flows =========')
+    # for f, s in connections.items():
+    #     flow_addresses = '{}:{},{}:{}'.format(f[0], f[1], f[2], f[3])
+    #     print(flow_addresses)
 
     # save_connections(connections)
 
