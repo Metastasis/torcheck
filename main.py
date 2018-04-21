@@ -4,6 +4,7 @@ from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str  # , save_connections
 from blacklist import Blacklist
+from track.tracker_client import track_flow
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -85,6 +86,8 @@ def egress_loop(packet):
         connections[flow] = connections[flow] + transport.data
     else:
         connections[flow] = transport.data
+
+    track_flow(('192.168.199.2', 10101), flow)
 
     try:
         stream = connections[flow]
