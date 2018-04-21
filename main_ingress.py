@@ -6,7 +6,7 @@ from utils import inet_to_str  # , save_connections
 from blacklist import Blacklist
 from track.tracker_client import track_flow
 
-LIBNETFILTER_QUEUE_NUM = 1
+LIBNETFILTER_QUEUE_NUM = 2
 
 connections = {}
 
