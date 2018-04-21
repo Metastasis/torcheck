@@ -11,54 +11,6 @@ LIBNETFILTER_QUEUE_NUM = 1
 connections = {}
 
 
-def ingress_loop(packet):
-    global connections
-
-    network = IP(packet.get_payload())
-    transport = network.data
-
-    # modify the packet all you want here
-    # packet.set_payload(str(pkt)) #set the packet content to our modified version
-
-    # if network.p not in KNOWN_PROTO:
-    #     print('[?] unknown protocol: {}'.format(network.p))
-    #     packet.accept()
-    #     return
-
-    src_ip = inet_to_str(network.src)
-    dst_ip = inet_to_str(network.src)
-    flow = (src_ip, transport.sport, dst_ip, transport.dport)
-
-    if flow in connections:
-        connections[flow] = connections[flow] + transport.data
-    else:
-        connections[flow] = transport.data
-
-    try:
-        stream = connections[flow]
-        if stream[:4] == 'HTTP':
-            http = Response(stream)
-            # print(http.status)
-        else:
-            http = Request(stream)
-            # print(http.method, http.uri)
-
-        print(http)
-        print()
-
-        # If we reached this part an exception hasn't been thrown
-        stream = stream[len(http):]
-        if len(stream) == 0:
-            del connections[flow]
-        else:
-            connections[flow] = stream
-    except UnpackError:
-        pass
-
-    packet.accept()
-    return
-
-
 def egress_loop(packet):
     global connections
     global blacklist
@@ -79,19 +31,18 @@ def egress_loop(packet):
     #     packet.drop()
     #     return
 
-    if transport.dport not in [80]:
-        return packet.accept()
-
     if flow in connections:
         connections[flow] = connections[flow] + transport.data
     else:
         connections[flow] = transport.data
 
-    try:
-        track_flow(('192.168.199.2', 10101), flow)
-    except Exception as e:
-        print(e)
-        pass
+    if transport.dport not in [80]:
+        return packet.accept()
+
+    # try:
+    #     track_flow(('192.168.199.2', 10101), flow)
+    # except:
+    #     pass
 
     try:
         stream = connections[flow]
@@ -139,9 +90,9 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Terminated")
 
-    print('========= flows =========')
+    print('========= egress flows =========')
     for f, s in connections.items():
-        flow_addresses = '{}:{}_{}:{}'.format(f[0], f[1], f[2], f[3])
+        flow_addresses = '{}:{},{}:{}'.format(f[0], f[1], f[2], f[3])
         print(flow_addresses)
 
     # save_connections(connections)
