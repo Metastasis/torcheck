@@ -87,7 +87,11 @@ def egress_loop(packet):
     else:
         connections[flow] = transport.data
 
-    track_flow(('192.168.199.2', 10101), flow)
+    try:
+        track_flow(('192.168.199.2', 10101), flow)
+    except Exception as e:
+        print(e)
+        pass
 
     try:
         stream = connections[flow]
