@@ -4,6 +4,7 @@ from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str  # , save_connections
 from blacklist import Blacklist
+from datetime import datetime
 from track.tracker_client import track_flow
 
 LIBNETFILTER_QUEUE_NUM = 1
@@ -36,7 +37,8 @@ def egress_loop(packet):
     else:
         connections[flow] = transport.data
 
-    flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
+    time = datetime.now().strftime('%Y-%m-%d %H:%M:%S:%f')
+    flow_addresses = '{}:{},{}:{} - {}'.format(src_ip, transport.sport, dst_ip, transport.dport, time)
     print(flow_addresses)
 
     if transport.dport not in [80]:
