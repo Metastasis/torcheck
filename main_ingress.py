@@ -26,7 +26,7 @@ def ingress_loop(packet):
     #     return
 
     src_ip = inet_to_str(network.src)
-    dst_ip = inet_to_str(network.src)
+    dst_ip = inet_to_str(network.dst)
     flow = (src_ip, transport.sport, dst_ip, transport.dport)
 
     if flow in connections:
