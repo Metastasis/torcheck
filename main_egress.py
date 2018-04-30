@@ -49,9 +49,9 @@ def egress_loop(packet):
         print('found marker: {}'.format(packet[-MARKER_LEN:]))
     elif network.len < IP_LEN_MAX:
         print('creating marker')
-        network.len = network.len + BYTE
-        network.data = network.data + MARKER
         hdr = network.pack_hdr()
+        network.len = network.len + BYTE
+        network.data = transport.pack() + MARKER
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
 
