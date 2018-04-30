@@ -10,7 +10,7 @@ LIBNETFILTER_QUEUE_NUM = 2
 
 connections = {}
 
-MARKER = b'0xdeadbeaf'
+MARKER = b'\x66\x66\x66\x66\x66\x66\x66\x66'
 MARKER_LEN = len(MARKER)
 BYTE = 1
 
@@ -45,7 +45,7 @@ def ingress_loop(packet):
     else:
         connections[flow] = transport.data
 
-    if raw_packet[-MARKER_LEN:] == MARKER:
+    if MARKER in raw_packet:
         print('found marker: {}'.format(packet[-MARKER_LEN:]))
         hdr = network.pack_hdr()
         network.len = network.len - BYTE

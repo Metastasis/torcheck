@@ -11,7 +11,7 @@ LIBNETFILTER_QUEUE_NUM = 1
 
 connections = {}
 
-MARKER = b'\x00\x00\x00\x00\xde\xad\xbe\xaf'
+MARKER = b'\x66\x66\x66\x66\x66\x66\x66\x66'
 MARKER_LEN = len(MARKER)
 BYTE = 1
 
