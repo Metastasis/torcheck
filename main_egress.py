@@ -1,6 +1,6 @@
-from dpkt.dpkt import UnpackError
+from dpkt.dpkt import UnpackError, in_cksum
 from dpkt.http import Request, Response
-from dpkt.ip import IP
+from dpkt.ip import IP, IP_LEN_MAX
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str  # , save_connections
 from blacklist import Blacklist
@@ -10,6 +10,10 @@ from track.tracker_client import track_flow
 LIBNETFILTER_QUEUE_NUM = 1
 
 connections = {}
+
+MARKER = b'0xdeadbeaf'
+MARKER_LEN = len(MARKER)
+BYTE = 1
 
 
 def egress_loop(packet):
@@ -40,6 +44,16 @@ def egress_loop(packet):
     time = datetime.now().strftime('%Y-%m-%d %H:%M:%S:%f')
     flow_addresses = '{}:{},{}:{} - {}'.format(src_ip, transport.sport, dst_ip, transport.dport, time)
     print(flow_addresses)
+
+    if packet[-MARKER_LEN:] == MARKER:
+        print('found marker: {}'.format(packet[-MARKER_LEN:]))
+    elif network.len < IP_LEN_MAX:
+        print('creating marker')
+        network.len = network.len + BYTE
+        network.data = network.data + MARKER
+        hdr = network.pack_hdr()
+        network.sum = in_cksum(hdr)
+        packet.set_payload(network.pack())
 
     if transport.dport not in [80]:
         return packet.accept()
