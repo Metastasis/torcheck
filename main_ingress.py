@@ -53,8 +53,7 @@ def ingress_loop(packet):
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
 
-    time = datetime.now().strftime('%Y-%m-%d %H:%M:%S:%f')
-    flow_addresses = '{}:{},{}:{} - {}'.format(src_ip, transport.sport, dst_ip, transport.dport, time)
+    flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
     # try:
