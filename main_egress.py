@@ -51,7 +51,7 @@ def egress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    if raw_packet[-MARKER_LEN:] == MARKER:
+    if MARKER in raw_packet:
         print('found marker: {}'.format(packet[-MARKER_LEN:]))
         hdr = network.pack_hdr()
         network.len = network.len - BYTE
@@ -59,14 +59,17 @@ def egress_loop(packet):
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
     elif dst_ip in KNOWN_PEERS and network.len < IP_LEN_MAX:
+        print()
         print('creating marker')
         hdr = network.pack_hdr()
         print(packet.get_payload())
         network.len = network.len + BYTE
         network.data = transport.pack() + MARKER
         network.sum = in_cksum(hdr)
-        packet.set_payload(network.pack())
+        t = packet.set_payload(network.pack())
+        print("result - {}".format(t))
         print(packet.get_payload())
+        print()
 
     if transport.dport not in [80]:
         return packet.accept()
