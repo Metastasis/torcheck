@@ -46,7 +46,7 @@ def ingress_loop(packet):
         connections[flow] = transport.data
 
     if MARKER in raw_packet:
-        print('found marker: {}'.format(packet[-MARKER_LEN:]))
+        print('found marker: {}'.format(raw_packet))
         hdr = network.pack_hdr()
         network.len = network.len - BYTE
         network.data = transport.pack()
