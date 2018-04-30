@@ -11,7 +11,7 @@ LIBNETFILTER_QUEUE_NUM = 1
 
 connections = {}
 
-MARKER = b'0xdeadbeaf'
+MARKER = b'\x00\x00\x00\x00\xde\xad\xbe\xaf'
 MARKER_LEN = len(MARKER)
 BYTE = 1
 
