@@ -19,8 +19,8 @@ BYTE = 1
 def egress_loop(packet):
     global connections
     global blacklist
-
-    network = IP(packet.get_payload())
+    raw_packet = packet.get_payload()
+    network = IP(raw_packet)
 
     # modify the packet all you want here
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
@@ -45,7 +45,7 @@ def egress_loop(packet):
     flow_addresses = '{}:{},{}:{} - {}'.format(src_ip, transport.sport, dst_ip, transport.dport, time)
     print(flow_addresses)
 
-    if packet[-MARKER_LEN:] == MARKER:
+    if raw_packet[-MARKER_LEN:] == MARKER:
         print('found marker: {}'.format(packet[-MARKER_LEN:]))
     elif network.len < IP_LEN_MAX:
         print('creating marker')
