@@ -65,7 +65,7 @@ def egress_loop(packet):
         network.len = network.len + BYTE
         network.data = transport.pack() + MARKER
         network.sum = in_cksum(hdr)
-        packet.set_payload(str(network))
+        packet.set_payload(network.pack())
         print(packet.get_payload())
 
     if transport.dport not in [80]:
