@@ -15,10 +15,17 @@ MARKER = b'0xdeadbeaf'
 MARKER_LEN = len(MARKER)
 BYTE = 1
 
+KNOWN_PEERS = [
+    '10.0.10.4',
+    '10.0.10.6',
+    '10.0.10.7'
+]
+
 
 def egress_loop(packet):
     global connections
     global blacklist
+
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
 
@@ -47,13 +54,20 @@ def egress_loop(packet):
 
     if raw_packet[-MARKER_LEN:] == MARKER:
         print('found marker: {}'.format(packet[-MARKER_LEN:]))
-    elif network.len < IP_LEN_MAX:
+        hdr = network.pack_hdr()
+        network.len = network.len - BYTE
+        network.data = transport.pack()
+        network.sum = in_cksum(hdr)
+        packet.set_payload(network.pack())
+    elif dst_ip in KNOWN_PEERS and network.len < IP_LEN_MAX:
         print('creating marker')
         hdr = network.pack_hdr()
+        print(raw_packet)
         network.len = network.len + BYTE
         network.data = transport.pack() + MARKER
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
+        print(raw_packet)
 
     if transport.dport not in [80]:
         return packet.accept()

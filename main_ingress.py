@@ -1,5 +1,4 @@
-from dpkt.dpkt import UnpackError
-from dpkt.http import Request, Response
+from dpkt.dpkt import in_cksum
 from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str  # , save_connections
@@ -11,10 +10,21 @@ LIBNETFILTER_QUEUE_NUM = 2
 
 connections = {}
 
+MARKER = b'0xdeadbeaf'
+MARKER_LEN = len(MARKER)
+BYTE = 1
+
+KNOWN_PEERS = [
+    '10.0.10.4',
+    '10.0.10.6',
+    '10.0.10.7'
+]
+
 
 def ingress_loop(packet):
     global connections
 
+    raw_packet = packet.get_payload()
     network = IP(packet.get_payload())
     transport = network.data
 
@@ -34,6 +44,14 @@ def ingress_loop(packet):
         connections[flow] = connections[flow] + transport.data
     else:
         connections[flow] = transport.data
+
+    if raw_packet[-MARKER_LEN:] == MARKER:
+        print('found marker: {}'.format(packet[-MARKER_LEN:]))
+        hdr = network.pack_hdr()
+        network.len = network.len - BYTE
+        network.data = transport.pack()
+        network.sum = in_cksum(hdr)
+        packet.set_payload(network.pack())
 
     time = datetime.now().strftime('%Y-%m-%d %H:%M:%S:%f')
     flow_addresses = '{}:{},{}:{} - {}'.format(src_ip, transport.sport, dst_ip, transport.dport, time)
