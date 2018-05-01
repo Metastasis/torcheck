@@ -62,9 +62,9 @@ def egress_loop(packet):
         packet.set_payload(network.pack())
     elif dst_ip in KNOWN_PEERS and network.len < IP_LEN_MAX and transport.dport in [5000]:
         print('creating marker')
-        hdr = network.pack_hdr()
         network.len = network.len + BYTE
         network.data = transport.pack() + MARKER
+        hdr = network.pack_hdr()
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
 
