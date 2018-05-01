@@ -49,7 +49,7 @@ def ingress_loop(packet):
         print('found marker: {}'.format(raw_packet))
         hdr = network.pack_hdr()
         network.len = network.len - BYTE
-        network.data = transport.pack()
+        network.data = transport.pack()[:-MARKER_LEN]
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
 
