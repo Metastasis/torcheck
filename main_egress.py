@@ -69,6 +69,8 @@ def egress_loop(packet):
         packet.set_payload(network.pack())
 
     if transport.dport not in [80]:
+        if is_marked:
+            print('modified packet: {}'.format(packet.get_payload()))
         return packet.accept()
 
     # try:

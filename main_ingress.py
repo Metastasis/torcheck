@@ -47,12 +47,10 @@ def ingress_loop(packet):
 
     if MARKER in raw_packet:
         is_marked = True
-        print('found marker')
+        print('found marker: {}'.format(packet.get_payload()))
         hdr = network.pack_hdr()
         network.len = network.len - BYTE
-        print("before: {}".format(network.data))
         network.data = transport.pack()[:-MARKER_LEN]
-        print("after: {}".format(network.data))
         print()
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
@@ -82,8 +80,8 @@ def ingress_loop(packet):
     #     pass
 
     packet.accept()
-    # if is_marked:
-    #     print('modified packet: {}'.format(packet.get_payload()))
+    if is_marked:
+        print('modified packet: {}'.format(packet.get_payload()))
     return
 
 
