@@ -78,6 +78,7 @@ def ingress_loop(packet):
     #     pass
 
     packet.accept()
+    print('modified packet: {}'.format(packet.get_payload()))
     return
 
 
