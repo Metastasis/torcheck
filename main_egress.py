@@ -26,6 +26,7 @@ def egress_loop(packet):
     global connections
     global blacklist
 
+    is_marked = False
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
 
@@ -52,6 +53,7 @@ def egress_loop(packet):
     print(flow_addresses)
 
     if MARKER in raw_packet:
+        is_marked = True
         print('found marker: {}'.format(raw_packet))
         hdr = network.pack_hdr()
         network.len = network.len - BYTE
@@ -105,6 +107,9 @@ def egress_loop(packet):
         pass
 
     packet.accept()
+    if is_marked:
+        print('modified packet: {}'.format(packet.get_payload()))
+    return
 
 
 if __name__ == "__main__":
