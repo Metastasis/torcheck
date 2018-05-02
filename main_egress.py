@@ -67,6 +67,7 @@ def egress_loop(packet):
     global connections
     global blacklist
 
+    is_marked = False
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
 
@@ -100,6 +101,7 @@ def egress_loop(packet):
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
     elif dst_ip in KNOWN_PEERS and network.len < IP_LEN_MAX:
+        is_marked = True
         print('creating marker')
         network.len = network.len + BYTE
         network.data = transport.pack() + MARKER
@@ -108,7 +110,9 @@ def egress_loop(packet):
         packet.set_payload(network.pack())
 
     if transport.dport not in [80]:
-        return packet.accept()
+        packet.accept()
+        if is_marked: print(packet.get_payload())
+        return
 
     try:
         stream = connections[flow]
@@ -140,7 +144,9 @@ def egress_loop(packet):
     except UnpackError:
         pass
 
-    return packet.accept()
+    packet.accept()
+    if is_marked: print(packet.get_payload())
+    return
 
 
 if __name__ == "__main__":
