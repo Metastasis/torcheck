@@ -50,12 +50,10 @@ def ingress_loop(packet):
 
     if MARKER in raw_packet:
         print('found marker')
-        print()
-        network.len = network.len - 8
         network.data = transport.pack()[:-MARKER_LEN]
-        hdr = network.pack_hdr() + bytes(network.opts)
-        network.sum = in_cksum(hdr)
-        packet.set_payload(network.pack())
+        network.len = len(network)
+        network.sum = 0
+        packet.set_payload(bytes(network))
 
     # try:
     #     stream = connections[flow]
