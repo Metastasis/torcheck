@@ -4,8 +4,7 @@ from dpkt.ip import IP, IP_LEN_MAX
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str  # , save_connections
 from blacklist import Blacklist
-from datetime import datetime
-from track.tracker_client import track_flow
+from ip_options import IPOption
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -20,6 +19,48 @@ KNOWN_PEERS = [
     '10.0.10.6',
     '10.0.10.7'
 ]
+
+option_pointer = b'\x05'  # pointer
+option_extra = b'\x01'  # overflow 0, flag - timestamp and address
+# option_address = b'\x00\x00\x00\x00'  # address
+# option_timestamp = b'\x00\x00\x00\x00'  # timestamp
+option_data = option_pointer + option_extra
+timestamp = IPOption(
+    type=0xC4,  # should copy, class debugging and measurement, type timestamp
+    length=0x0c,
+    data=option_data
+)
+
+option_eol = b'\x00'  # End of Options List
+
+
+# padding = size of options - (0x0C + 0x01)
+
+
+def append_options(ip, new_option):
+    has_options = len(ip.opts) > 0
+    if has_options:
+        return ip
+
+    DWORD = 4  # bytes
+    EOL_LEN = 1  # DWORD
+    opts_len = (new_option.length / DWORD) + EOL_LEN  # DWORDS
+    header_len = ip.hl + opts_len
+    if header_len > 15:
+        return ip
+
+    opts_len = opts_len * DWORD  # bytes
+
+    ip.hl = header_len
+    ip.len = ip.len + opts_len
+    ip.opts = bytes(new_option) + option_eol
+
+    padding_len = opts_len - len(ip.opts)
+
+    ip.opts = ip.opts + (b'\x00' * padding_len)
+    ip.sum = in_cksum(ip.pack_hdr() + bytes(ip.opts))
+
+    return ip
 
 
 def egress_loop(packet):
@@ -54,22 +95,15 @@ def egress_loop(packet):
     exclude_ports = transport.dport not in [7000] and transport.sport not in [7000]
     if dst_ip in KNOWN_PEERS and network.len < IP_LEN_MAX and exclude_ports:
         print('creating marker')
-        print("len: {}, sum: {}".format(network.len, network.sum))
         network.len = network.len + BYTE
         network.data = transport.pack() + MARKER
-        hdr = network.pack_hdr()
+        hdr = network.pack_hdr() + bytes(network.opts)
         network.sum = in_cksum(hdr)
-        print("new len: {}, new sum: {}".format(network.len, network.sum))
         packet.set_payload(network.pack())
 
     if transport.dport not in [80]:
         packet.accept()
         return
-
-    # try:
-    #     track_flow(('192.168.199.2', 10101), flow)
-    # except:
-    #     pass
 
     try:
         stream = connections[flow]
