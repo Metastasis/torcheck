@@ -27,7 +27,7 @@ def ingress_loop(packet):
     raw_packet = packet.get_payload()
     network = IP(packet.get_payload())
     transport = network.data
-    is_marked = False
+
     # modify the packet all you want here
     # packet.set_payload(str(pkt)) #set the packet content to our modified version
 
@@ -45,22 +45,17 @@ def ingress_loop(packet):
     else:
         connections[flow] = transport.data
 
-    print('raw packet: {}'.format(raw_packet))
-    print()
-    data = transport.pack()
-    if MARKER in data:
-        is_marked = True
+    flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
+    print(flow_addresses)
+
+    if MARKER in raw_packet:
         print('found marker')
         print()
-        print()
         network.len = network.len - BYTE
-        network.data = data[:-MARKER_LEN]
+        network.data = transport.pack()[:-MARKER_LEN]
         hdr = network.pack_hdr() + bytes(network.opts)
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
-
-    flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
-    print(flow_addresses)
 
     # try:
     #     stream = connections[flow]
