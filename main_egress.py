@@ -103,15 +103,9 @@ def egress_loop(packet):
     elif dst_ip in KNOWN_PEERS and network.len < IP_LEN_MAX:
         is_marked = True
         print('creating marker')
-        print(network.data)
-        print(network.len)
-        print(network.sum)
         network.data = transport.pack() + MARKER
         network.len = len(network)
         network.sum = 0  # dpkt magic to recalc checksum
-        print(network.data)
-        print(network.len)
-        print(network.sum)
         packet.set_payload(bytes(network))
 
     if transport.dport not in [80]:
