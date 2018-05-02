@@ -26,7 +26,6 @@ def egress_loop(packet):
     global connections
     global blacklist
 
-    is_marked = False
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
 
@@ -53,7 +52,6 @@ def egress_loop(packet):
     print(flow_addresses)
 
     if MARKER in raw_packet:
-        is_marked = True
         print('found marker: {}'.format(raw_packet))
         hdr = network.pack_hdr()
         network.len = network.len - BYTE
@@ -66,12 +64,12 @@ def egress_loop(packet):
         network.data = transport.pack() + MARKER
         hdr = network.pack_hdr()
         network.sum = in_cksum(hdr)
+        print("len: {}, sum: {}".format(network.len, network.sum))
         packet.set_payload(network.pack())
 
     if transport.dport not in [80]:
-        if is_marked:
-            print('modified packet: {}'.format(packet.get_payload()))
-        return packet.accept()
+        packet.accept()
+        return
 
     # try:
     #     track_flow(('192.168.199.2', 10101), flow)
@@ -109,8 +107,6 @@ def egress_loop(packet):
         pass
 
     packet.accept()
-    if is_marked:
-        print('modified packet: {}'.format(packet.get_payload()))
     return
 
 
