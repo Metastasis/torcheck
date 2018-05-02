@@ -101,8 +101,7 @@ def egress_loop(packet):
         packet.set_payload(network.pack())
 
     if transport.dport not in [80]:
-        packet.accept()
-        return
+        return packet.accept()
 
     try:
         stream = connections[flow]
@@ -134,8 +133,7 @@ def egress_loop(packet):
     except UnpackError:
         pass
 
-    packet.accept()
-    return
+    return packet.accept()
 
 
 if __name__ == "__main__":

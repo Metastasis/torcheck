@@ -83,10 +83,7 @@ def ingress_loop(packet):
     # except UnpackError:
     #     pass
 
-    packet.accept()
-    # if is_marked:
-    #     print('modified packet: {}'.format(packet.get_payload()))
-    return
+    return packet.accept()
 
 
 if __name__ == "__main__":
