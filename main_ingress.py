@@ -53,7 +53,6 @@ def ingress_loop(packet):
         print('found marker')
         print()
         print()
-        print()
         network.len = network.len - BYTE
         network.data = data[:-MARKER_LEN]
         hdr = network.pack_hdr() + bytes(network.opts)
