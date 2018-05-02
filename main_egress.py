@@ -51,7 +51,7 @@ def egress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    exclude_ports = transport.dport not in [7000] or transport.sport not in [7000]
+    exclude_ports = transport.dport not in [7000] and transport.sport not in [7000]
     if dst_ip in KNOWN_PEERS and network.len < IP_LEN_MAX and exclude_ports:
         print('creating marker')
         print("len: {}, sum: {}".format(network.len, network.sum))
