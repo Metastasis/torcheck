@@ -45,15 +45,17 @@ def ingress_loop(packet):
     else:
         connections[flow] = transport.data
 
-    if MARKER in raw_packet:
+    data = transport.pack()
+    if MARKER in data:
         is_marked = True
         print('found marker')
+        print()
+        print()
         network.len = network.len - BYTE
-        network.data = transport.pack()[:-MARKER_LEN]
+        network.data = data[:-MARKER_LEN]
         hdr = network.pack_hdr() + bytes(network.opts)
         network.sum = in_cksum(hdr)
         packet.set_payload(network.pack())
-
 
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
