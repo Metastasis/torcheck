@@ -95,7 +95,7 @@ def egress_loop(packet):
 
     if MARKER in raw_packet:
         print('found marker')
-        network.len = network.len - BYTE
+        network.len = network.len - 8
         network.data = transport.pack()[:-MARKER_LEN]
         hdr = network.pack_hdr() + bytes(network.opts)
         network.sum = in_cksum(hdr)
@@ -107,7 +107,7 @@ def egress_loop(packet):
         print(network.data)
         print(network.sum)
         print()
-        network.len = network.len + BYTE
+        network.len = network.len + 8
         network.data = transport.pack() + MARKER
         hdr = network.pack_hdr() + bytes(network.opts)
         network.sum = in_cksum(hdr)

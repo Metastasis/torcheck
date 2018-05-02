@@ -51,7 +51,7 @@ def ingress_loop(packet):
     if MARKER in raw_packet:
         print('found marker')
         print()
-        network.len = network.len - BYTE
+        network.len = network.len - 8
         network.data = transport.pack()[:-MARKER_LEN]
         hdr = network.pack_hdr() + bytes(network.opts)
         network.sum = in_cksum(hdr)
