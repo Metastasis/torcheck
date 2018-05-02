@@ -52,7 +52,7 @@ def ingress_loop(packet):
         print('found marker')
         network.data = transport.pack()[:-MARKER_LEN]
         network.len = len(network)
-        network.sum = 0
+        network.sum = 0  # dpkt magic to recalc checksum
         packet.set_payload(bytes(network))
 
     # try:
