@@ -47,7 +47,7 @@ def append_options(ip, new_option):
 
     DWORD = 4  # bytes
     EOL_LEN = 1  # DWORD
-    opts_len = (new_option.length / DWORD) + EOL_LEN  # DWORDS
+    opts_len = int(new_option.length / DWORD) + EOL_LEN  # DWORDS
     header_len = ip.hl + opts_len
     if header_len > 15:
         return ip
