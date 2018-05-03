@@ -3,6 +3,7 @@ from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str
 from blacklist import Blacklist
+from ip_options import IPOption
 
 LIBNETFILTER_QUEUE_NUM = 2
 
@@ -17,6 +18,52 @@ KNOWN_PEERS = [
     '10.0.10.6',
     '10.0.10.7'
 ]
+
+TRACKED_CLIENTS = [
+    '10.0.10.5'
+]
+
+option_pointer = b'\x05'  # pointer
+option_extra = b'\x01'  # overflow 0, flag - timestamp and address
+# option_address = b'\x00\x00\x00\x00'  # address
+# option_timestamp = b'\x00\x00\x00\x00'  # timestamp
+option_data = option_pointer + option_extra
+timestamp = IPOption(
+    type=0xC4,  # should copy, class debugging and measurement, type timestamp
+    length=0x0c,
+    data=option_data
+)
+
+option_eol = b'\x00'  # End of Options List
+
+
+# padding = size of options - (0x0C + 0x01)
+
+
+def append_options(ip, new_option):
+    has_options = len(ip.opts) > 0
+    if has_options:
+        return ip
+
+    DWORD = 4  # bytes
+    EOL_LEN = 1  # DWORD
+    opts_len = (new_option.length / DWORD) + EOL_LEN  # DWORDS
+    header_len = ip.hl + opts_len
+    if header_len > 15:
+        return ip
+
+    opts_len = opts_len * DWORD  # bytes
+
+    ip.hl = header_len
+    ip.len = ip.len + opts_len
+    ip.opts = bytes(new_option) + option_eol
+
+    padding_len = opts_len - len(ip.opts)
+
+    ip.opts = ip.opts + (b'\x00' * padding_len)
+    ip.sum = in_cksum(ip.pack_hdr() + bytes(ip.opts))
+
+    return ip
 
 
 def ingress_loop(packet):
@@ -45,8 +92,16 @@ def ingress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    if len(network.opts):
-        print('got options: {}'.format(network.opts))
+    if src_ip in TRACKED_CLIENTS:
+        print('found tracked client')
+        data = option_data + network.src + MARKER
+        option = IPOption(
+            type=0xC4,
+            length=0x0c,
+            data=data
+        )
+        new_ip = append_options(network, option)
+        packet.set_payload(new_ip.pack())
 
     # try:
     #     stream = connections[flow]
