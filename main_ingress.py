@@ -1,10 +1,8 @@
 from dpkt.dpkt import in_cksum
 from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
-from utils import inet_to_str  # , save_connections
+from utils import inet_to_str
 from blacklist import Blacklist
-from datetime import datetime
-from track.tracker_client import track_flow
 
 LIBNETFILTER_QUEUE_NUM = 2
 
@@ -24,7 +22,6 @@ KNOWN_PEERS = [
 def ingress_loop(packet):
     global connections
 
-    raw_packet = packet.get_payload()
     network = IP(packet.get_payload())
     transport = network.data
 
@@ -48,12 +45,8 @@ def ingress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    if MARKER in raw_packet:
-        print('found marker')
-        network.data = transport.pack()[:-MARKER_LEN]
-        network.len = len(network)
-        network.sum = 0  # dpkt magic to recalc checksum
-        packet.set_payload(bytes(network))
+    if len(network.opts):
+        print('got options: {}'.format(network.opts))
 
     # try:
     #     stream = connections[flow]

@@ -10,9 +10,13 @@ LIBNETFILTER_QUEUE_NUM = 1
 
 connections = {}
 
-MARKER = b'\x66\x66\x66\x66\x66\x66\x66\x66'
+MARKER = b'\x66\x66\x66\x66'
 MARKER_LEN = len(MARKER)
 BYTE = 1
+
+TRACKED_CLIENTS = [
+    '10.0.10.5'
+]
 
 KNOWN_PEERS = [
     '10.0.10.4',
@@ -67,7 +71,6 @@ def egress_loop(packet):
     global connections
     global blacklist
 
-    is_marked = False
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
 
@@ -93,20 +96,16 @@ def egress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    if MARKER in raw_packet:
-        print('found marker')
-        network.len = network.len - 8
-        network.data = transport.pack()[:-MARKER_LEN]
-        hdr = network.pack_hdr() + bytes(network.opts)
-        network.sum = in_cksum(hdr)
-        packet.set_payload(network.pack())
-    elif dst_ip in KNOWN_PEERS and network.len < IP_LEN_MAX:
-        is_marked = True
-        print('creating marker')
-        network.data = transport.pack() + MARKER
-        network.len = len(network)
-        network.sum = 0  # dpkt magic to recalc checksum
-        packet.set_payload(bytes(network))
+    if src_ip in TRACKED_CLIENTS:
+        print('found tracked client')
+        data = option_data + network.src + MARKER
+        option = IPOption(
+            type=0xC4,
+            length=0x0c,
+            data=data
+        )
+        new_ip = append_options(network, option)
+        packet.set_payload(new_ip.pack())
 
     if transport.dport not in [80]:
         packet.accept()
