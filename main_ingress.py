@@ -62,7 +62,7 @@ def ingress_loop(packet):
         print('found tracked client')
         data = option_data + b'\x33\x33\x33\x33' + MARKER
         option = IPOption(
-            type=0x44,
+            type=0x70,
             length=0x0c,
             data=data
         )

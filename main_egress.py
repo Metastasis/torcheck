@@ -64,7 +64,7 @@ def egress_loop(packet):
         option_extra = b'\x00'  # overflow 0, flag - timestamp and address
         data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
         option = IPOption(
-            type=0x44,
+            type=0x70,
             length=0x0c,
             data=data
         )
