@@ -84,7 +84,7 @@ def append_options(ip, new_option):
 
     ip.opts = ip.opts + (b'\x00' * padding_len)
     print('hl: {}, ip.len: {}, opts len: {}'.format(ip.hl, ip.len, len(ip.opts)))
-    ip.sum = in_cksum(ip.pack_hdr() + bytes(ip.opts))
+    ip.sum = 0
 
     return ip
 

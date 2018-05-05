@@ -67,7 +67,7 @@ def ingress_loop(packet):
             data=data
         )
         new_ip = append_options(network, option)
-        packet.set_payload(new_ip.pack())
+        packet.set_payload(bytes(new_ip))
 
     # try:
     #     stream = connections[flow]
