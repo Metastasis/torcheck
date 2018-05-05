@@ -9,7 +9,7 @@ LIBNETFILTER_QUEUE_NUM = 2
 
 connections = {}
 
-MARKER = b'\x66\x66\x66\x66\x66\x66\x66\x66'
+MARKER = b'\x66\x66\x66\x66'
 MARKER_LEN = len(MARKER)
 BYTE = 1
 
@@ -28,11 +28,6 @@ option_extra = b'\x01'  # overflow 0, flag - timestamp and address
 # option_address = b'\x00\x00\x00\x00'  # address
 # option_timestamp = b'\x00\x00\x00\x00'  # timestamp
 option_data = option_pointer + option_extra
-timestamp = IPOption(
-    type=0xC4,  # should copy, class debugging and measurement, type timestamp
-    length=0x0c,
-    data=option_data
-)
 
 # padding = size of options - (0x0C + 0x01)
 
@@ -65,9 +60,9 @@ def ingress_loop(packet):
 
     if src_ip in TRACKED_CLIENTS:
         print('found tracked client')
-        data = option_data + network.src + MARKER
+        data = option_data + b'\x33\x33\x33\x33' + MARKER
         option = IPOption(
-            type=0xC4,
+            type=0x44,
             length=0x0c,
             data=data
         )
