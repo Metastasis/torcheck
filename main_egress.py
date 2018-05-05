@@ -55,21 +55,24 @@ def egress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    # if len(network.opts):
-    #     print('got options: {}'.format(network.opts))
-    # elif dst_ip in KNOWN_PEERS:
-    #     print('no options, adding...')
-    #     options_appended = True
-    #     option_pointer = b'\x0D'  # pointer
-    #     option_extra = b'\x00'  # overflow 0, flag - timestamp and address
-    #     data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
-    #     option = IPOption(
-    #         type=0x44,
-    #         length=0x0c,
-    #         data=data
-    #     )
-    #     new_ip = append_options(network, option)
-    #     packet.set_payload(bytes(new_ip))
+    if len(network.opts):
+        print('got options: {}'.format(network.opts))
+        network.opts = b''
+        network.sum = 0
+        packet.set_payload(bytes(network))
+    elif dst_ip in KNOWN_PEERS:
+        print('no options, adding...')
+        options_appended = True
+        option_pointer = b'\x0D'  # pointer
+        option_extra = b'\x00'  # overflow 0, flag - timestamp and address
+        data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
+        option = IPOption(
+            type=0x44,
+            length=0x0c,
+            data=data
+        )
+        new_ip = append_options(network, option)
+        packet.set_payload(bytes(new_ip))
 
     if transport.dport not in [80]:
         packet.accept()
