@@ -58,18 +58,18 @@ def egress_loop(packet):
     if len(network.opts):
         print('got options: {}'.format(network.opts))
     else:
-        print('found tracked client')
+        print('no options, adding...')
         options_appended = True
         option_pointer = b'\x05'  # pointer
         option_extra = b'\x01'  # overflow 0, flag - timestamp and address
-        data = option_pointer + option_extra + network.src + MARKER
+        data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
         option = IPOption(
-            type=0xC4,
+            type=0x44,
             length=0x0c,
             data=data
         )
         new_ip = append_options(network, option)
-        packet.set_payload(new_ip.pack())
+        packet.set_payload(bytes(new_ip))
 
     if transport.dport not in [80]:
         packet.accept()
