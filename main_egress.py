@@ -60,7 +60,7 @@ def egress_loop(packet):
     elif dst_ip in KNOWN_PEERS:
         print('no options, adding...')
         options_appended = True
-        option_pointer = b'\x13'  # pointer
+        option_pointer = b'\x0D'  # pointer
         option_extra = b'\x00'  # overflow 0, flag - timestamp and address
         data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
         option = IPOption(

@@ -56,7 +56,7 @@ def ingress_loop(packet):
 
     if src_ip in TRACKED_CLIENTS:
         print('found tracked client')
-        option_pointer = b'\x13'  # pointer
+        option_pointer = b'\x0D'  # pointer
         option_extra = b'\x00'  # overflow 0, flag - timestamp and address
         data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
         option = IPOption(
