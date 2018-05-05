@@ -29,7 +29,6 @@ def egress_loop(packet):
     global connections
     global blacklist
 
-    options_appended = False
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
 
@@ -57,24 +56,13 @@ def egress_loop(packet):
 
     can_modify = transport.seq > 0 and transport.ack > 0
     if can_modify:
-        if len(network.opts):
-            print('got options: {}'.format(network.opts))
-            network.opts = b''
+        if network.rf:
+            print('got RF set')
+        elif dst_ip in KNOWN_PEERS:
+            print('no RF, setting...')
+            network.rf = 1
             network.sum = 0
             packet.set_payload(bytes(network))
-        elif dst_ip in KNOWN_PEERS:
-            print('no options, adding...')
-            options_appended = True
-            option_pointer = b'\x0D'  # pointer
-            option_extra = b'\x00'  # overflow 0, flag - timestamp and address
-            data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
-            option = IPOption(
-                type=0x44,
-                length=0x0c,
-                data=data
-            )
-            new_ip = append_options(network, option)
-            packet.set_payload(bytes(new_ip))
 
     if transport.dport not in [80]:
         packet.accept()
