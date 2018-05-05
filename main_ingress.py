@@ -24,7 +24,7 @@ TRACKED_CLIENTS = [
 ]
 
 option_pointer = b'\x05'  # pointer
-option_extra = b'\x01'  # overflow 0, flag - timestamp and address
+option_extra = b'\x00'  # overflow 0, flag - timestamp and address
 # option_address = b'\x00\x00\x00\x00'  # address
 # option_timestamp = b'\x00\x00\x00\x00'  # timestamp
 option_data = option_pointer + option_extra
