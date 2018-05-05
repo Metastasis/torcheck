@@ -54,23 +54,25 @@ def ingress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    if len(network.opts):
-        print('got options: {}'.format(network.opts))
-        network.opts = b''
-        network.sum = 0
-        packet.set_payload(bytes(network))
-    elif src_ip in TRACKED_CLIENTS:
-        print('found tracked client')
-        option_pointer = b'\x0D'  # pointer
-        option_extra = b'\x00'  # overflow 0, flag - timestamp and address
-        data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
-        option = IPOption(
-            type=0x44,
-            length=0x0c,
-            data=data
-        )
-        new_ip = append_options(network, option)
-        packet.set_payload(bytes(new_ip))
+    can_modify = transport.seq > 0 and transport.ack > 0
+    if can_modify:
+        if len(network.opts):
+            print('got options: {}'.format(network.opts))
+            network.opts = b''
+            network.sum = 0
+            packet.set_payload(bytes(network))
+        elif src_ip in TRACKED_CLIENTS:
+            print('found tracked client')
+            option_pointer = b'\x0D'  # pointer
+            option_extra = b'\x00'  # overflow 0, flag - timestamp and address
+            data = option_pointer + option_extra + b'\x33\x33\x33\x33' + MARKER
+            option = IPOption(
+                type=0x44,
+                length=0x0c,
+                data=data
+            )
+            new_ip = append_options(network, option)
+            packet.set_payload(bytes(new_ip))
 
     # try:
     #     stream = connections[flow]
