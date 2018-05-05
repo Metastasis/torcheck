@@ -57,7 +57,7 @@ def egress_loop(packet):
 
     if len(network.opts):
         print('got options: {}'.format(network.opts))
-    else:
+    elif dst_ip in KNOWN_PEERS:
         print('no options, adding...')
         options_appended = True
         option_pointer = b'\x05'  # pointer
