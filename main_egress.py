@@ -4,6 +4,7 @@ from dpkt.ip import IP, IP_LEN_MAX
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str  # , save_connections
 from blacklist import Blacklist
+from ip_options import IPOption, append_options
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -19,11 +20,16 @@ KNOWN_PEERS = [
     '10.0.10.7'
 ]
 
+TRACKED_CLIENTS = [
+    '10.0.10.5'
+]
+
 
 def egress_loop(packet):
     global connections
     global blacklist
 
+    options_appended = False
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
 
@@ -51,6 +57,19 @@ def egress_loop(packet):
 
     if len(network.opts):
         print('got options: {}'.format(network.opts))
+    else:
+        print('found tracked client')
+        options_appended = True
+        option_pointer = b'\x05'  # pointer
+        option_extra = b'\x01'  # overflow 0, flag - timestamp and address
+        data = option_pointer + option_extra + network.src + MARKER
+        option = IPOption(
+            type=0xC4,
+            length=0x0c,
+            data=data
+        )
+        new_ip = append_options(network, option)
+        packet.set_payload(new_ip.pack())
 
     if transport.dport not in [80]:
         packet.accept()

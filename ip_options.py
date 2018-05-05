@@ -1,4 +1,4 @@
-from dpkt import Packet
+from dpkt import Packet, in_cksum
 from dpkt.ip import IP
 
 
@@ -59,6 +59,33 @@ class IPOptions(IPOption):
         # TODO: create algorithm for options
         IPOption.unpack(self, buf)
         self.data = buf[self.__hdr_len__:self.length + 1]
+
+
+def append_options(ip, new_option):
+    has_options = len(ip.opts) > 0
+    if has_options:
+        return ip
+
+    DWORD = 4  # bytes
+    EOL_LEN = 1  # DWORD
+    option_eol = b'\x00'  # End of Options List
+    opts_len = int(new_option.length / DWORD) + EOL_LEN  # DWORDS
+    header_len = ip.hl + opts_len
+    if header_len > 15:
+        return ip
+
+    opts_len = opts_len * DWORD  # bytes
+
+    ip.hl = header_len
+    ip.len = ip.len + opts_len
+    ip.opts = bytes(new_option) + option_eol
+
+    padding_len = opts_len - len(ip.opts)
+
+    ip.opts = ip.opts + (b'\x00' * padding_len)
+    ip.sum = in_cksum(ip.pack_hdr() + bytes(ip.opts))
+
+    return ip
 
 
 def test_opt():
