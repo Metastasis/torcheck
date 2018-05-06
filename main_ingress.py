@@ -93,11 +93,11 @@ if __name__ == "__main__":
     parser = get_args_for_ingress()
     client_log = ClientLog()
 
-    parser.parse_args()
+    args = parser.parse_args()
     client_log.clean()
 
     tracked_cfg = BaseConfig(TRACKED_CLIENTS_PATH)
-    if parser.clients is None:
+    if args.clients is None:
         tracked_cfg.load()
     else:
         tracked_cfg.load(parser.clients)

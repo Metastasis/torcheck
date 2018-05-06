@@ -116,22 +116,22 @@ if __name__ == "__main__":
     client_log = ClientLog()
     blacklist = Blacklist()
 
-    parser.parse_args()
+    args = parser.parse_args()
 
     peers_cfg = BaseConfig(PEERS_PATH)
-    if parser.peers is None:
+    if args.peers is None:
         peers_cfg.load()
     else:
-        peers_cfg.load(parser.peers)
+        peers_cfg.load(args.peers)
 
     KNOWN_PEERS = peers_cfg.data
     if not len(KNOWN_PEERS):
         raise ValueError("Known peers list is empty. You have to specify IP addresses of known peers")
 
-    if parser.blacklist is None:
+    if args.blacklist is None:
         blacklist.load()
     else:
-        blacklist.load(parser.blacklist)
+        blacklist.load(args.blacklist)
 
     if not len(blacklist):
         raise ValueError("Blacklist is empty. You have to specify blacklisted IP addresses")
