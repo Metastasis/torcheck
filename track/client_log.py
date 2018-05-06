@@ -15,6 +15,7 @@ class ClientLog:
         """
         lines_read = 0
         arrivals = []
+        # TODO: should somehow mark lines that has been used
         with open(CLIENTLOG_PATH, 'r') as f:
             last_n_lines = f.read().splitlines()[-self.RECENT_CLIENTS:]
             for line in last_n_lines:
