@@ -6,6 +6,9 @@ from utils import inet_to_str  # , save_connections
 from blacklist import Blacklist
 from track.client_log import ClientLog
 from datetime import datetime
+from arguments import get_args_for_egress
+from configuration.base_config import BaseConfig
+from config import PEERS_PATH
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -108,9 +111,30 @@ def egress_loop(packet):
 
 
 if __name__ == "__main__":
+    KNOWN_PEERS = []
+    parser = get_args_for_egress()
     client_log = ClientLog()
     blacklist = Blacklist()
-    blacklist.load()
+
+    parser.parse_args()
+
+    peers_cfg = BaseConfig(PEERS_PATH)
+    if parser.peers is None:
+        peers_cfg.load()
+    else:
+        peers_cfg.load(parser.peers)
+
+    KNOWN_PEERS = peers_cfg.data
+    if not len(KNOWN_PEERS):
+        raise ValueError("Known peers list is empty. You have to specify IP addresses of known peers")
+
+    if parser.blacklist is None:
+        blacklist.load()
+    else:
+        blacklist.load(parser.blacklist)
+
+    if not len(blacklist):
+        raise ValueError("Blacklist is empty. You have to specify blacklisted IP addresses")
 
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)

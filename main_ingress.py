@@ -3,6 +3,9 @@ from netfilterqueue import NetfilterQueue
 from utils import inet_to_str
 from track.client_log import ClientLog
 from datetime import datetime
+from arguments import get_args_for_ingress
+from configuration.base_config import BaseConfig
+from config import TRACKED_CLIENTS_PATH
 
 LIBNETFILTER_QUEUE_NUM = 2
 
@@ -86,8 +89,25 @@ def ingress_loop(packet):
 
 
 if __name__ == "__main__":
+    TRACKED_CLIENTS = []
+    parser = get_args_for_ingress()
     client_log = ClientLog()
+
+    parser.parse_args()
     client_log.clean()
+
+    tracked_cfg = BaseConfig(TRACKED_CLIENTS_PATH)
+    if parser.clients is None:
+        tracked_cfg.load()
+    else:
+        tracked_cfg.load(parser.clients)
+
+    TRACKED_CLIENTS = tracked_cfg.data
+    if not len(TRACKED_CLIENTS):
+        raise ValueError("""
+            Tracked clients list is empty.
+            You have to specify IP addresses of clients that has to be tracked
+        """)
 
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
