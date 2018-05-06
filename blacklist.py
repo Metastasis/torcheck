@@ -19,14 +19,24 @@ class Blacklist:
                 url, ip_list = self._parse(line)
 
                 self.data[url] = ip_list
-                for ip in ip_list:
-                    self.data[ip] = url
+
+    def save(self):
+        if not len(self.data.keys()):
+            raise ValueError("Config is empty. Nothing to save")
+        lines = ""
+        for url, ip_list in self.data.items():
+            lines = lines + "{};{}\n".format(url, ','.join(ip_list))
+        with open(BLACKLIST_PATH, 'w') as f:
+            f.write(lines)
 
     def _parse(self, line):
         url, all_ip = line.split(';')
         ip_list = all_ip.split(',')
 
         return url, ip_list
+
+    def _unpack(self, item):
+        pass
 
     def __len__(self):
         return len(self.data)
@@ -36,7 +46,6 @@ class Blacklist:
 
     def has(self, key):
         return self.__contains__(key)
-
 
 # if __name__ == '__main__':
 #     blacklist = Blacklist()

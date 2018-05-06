@@ -76,22 +76,21 @@ def egress_loop(packet):
     try:
         stream = connections[flow]
         http = Request(stream)
-        if src_ip in blacklist:
-            bad_ip = src_ip
-        elif dst_ip in blacklist:
-            bad_ip = dst_ip
-        else:
-            bad_ip = 'not listed'
+        # if src_ip in blacklist:
+        #     bad_ip = src_ip
+        # elif dst_ip in blacklist:
+        #     bad_ip = dst_ip
+        # else:
+        #     bad_ip = 'not listed'
 
         bad_host = http.headers['host']
 
         print(flow)
 
         if tracked_client_arrived and bad_host in blacklist:
-            print('[drop] blacklisted host: {}, IP: {}, IP (blacklist): {}'.format(
+            print('[drop] blacklisted host: {}, IP: {}'.format(
                 bad_host,
-                dst_ip,
-                bad_ip
+                dst_ip
             ))
             del connections[flow]
             return packet.drop()
@@ -123,6 +122,8 @@ if __name__ == "__main__":
         peers_cfg.load()
     else:
         peers_cfg.load(args.peers)
+        if len(peers_cfg.data):
+            peers_cfg.save()
 
     KNOWN_PEERS = peers_cfg.data
     if not len(KNOWN_PEERS):
@@ -132,12 +133,11 @@ if __name__ == "__main__":
         blacklist.load()
     else:
         blacklist.load(args.blacklist)
+        if len(blacklist):
+            blacklist.save()
 
     if not len(blacklist):
         raise ValueError("Blacklist is empty. You have to specify blacklisted IP addresses")
-
-    print('peers: ', KNOWN_PEERS)
-    print('blacklist: ', blacklist.data)
 
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
