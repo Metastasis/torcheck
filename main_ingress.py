@@ -87,6 +87,7 @@ def ingress_loop(packet):
 
 if __name__ == "__main__":
     client_log = ClientLog()
+    client_log.clean()
 
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
