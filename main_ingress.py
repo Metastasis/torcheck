@@ -100,7 +100,7 @@ if __name__ == "__main__":
     if args.clients is None:
         tracked_cfg.load()
     else:
-        tracked_cfg.load(parser.clients)
+        tracked_cfg.load(args.clients)
 
     TRACKED_CLIENTS = tracked_cfg.data
     if not len(TRACKED_CLIENTS):
