@@ -11,7 +11,7 @@ class Blacklist:
         if not path:
             path = BLACKLIST_PATH
 
-        with open(path, 'r') as f:
+        with open(path, 'r+') as f:
             for line in f.read().splitlines():
                 if not line:
                     continue
@@ -26,7 +26,7 @@ class Blacklist:
         lines = ""
         for url, ip_list in self.data.items():
             lines = lines + "{};{}\n".format(url, ','.join(ip_list))
-        with open(BLACKLIST_PATH, 'w') as f:
+        with open(BLACKLIST_PATH, 'w+') as f:
             f.write(lines)
 
     def _parse(self, line):
