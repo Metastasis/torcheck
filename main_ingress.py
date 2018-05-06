@@ -111,7 +111,6 @@ if __name__ == "__main__":
             You have to specify IP addresses of clients that has to be tracked
         """)
 
-    print('clients: ', TRACKED_CLIENTS)
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
 

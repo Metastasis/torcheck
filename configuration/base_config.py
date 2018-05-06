@@ -6,7 +6,7 @@ class BaseConfig:
     def load(self, filename=None):
         if filename is None:
             filename = self.PATH_TO_CONFIG
-        with open(filename, 'r+') as f:
+        with open(filename, 'r') as f:
             for line in f.read().splitlines():
                 if not line:
                     continue

@@ -11,7 +11,7 @@ class Blacklist:
         if not path:
             path = BLACKLIST_PATH
 
-        with open(path, 'r+') as f:
+        with open(path, 'r') as f:
             for line in f.read().splitlines():
                 if not line:
                     continue
