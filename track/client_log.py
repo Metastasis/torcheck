@@ -44,7 +44,7 @@ class ClientLog:
         with open(CLIENTLOG_PATH, 'r') as f:
             last_n_lines = f.read().splitlines()[-self.RECENT_CLIENTS:]
         with open(CLIENTLOG_PATH, 'w') as f:
-            f.write('\n'.join(last_n_lines))
+            f.write('\n'.join(last_n_lines) + '\n')
 
     def _parse(self, line):
         return line
