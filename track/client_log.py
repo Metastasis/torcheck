@@ -36,7 +36,7 @@ class ClientLog:
 
     def log(self, date=datetime.now()):
         with open(CLIENTLOG_PATH, 'a') as f:
-            line = date.strftime(self.DATE_FORMAT)
+            line = date.strftime(self.DATE_FORMAT) + "\n"
             f.write(line)
         return True
 
