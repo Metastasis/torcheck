@@ -59,7 +59,7 @@ def ingress_loop(packet):
     # can_modify = transport.seq > 0 and transport.ack > 0
     if network.rf or src_ip in TRACKED_CLIENTS:
         print('got RF set, logging into file...')
-        client_log.log(network, now)
+        client_log.log(now)
 
     # try:
     #     stream = connections[flow]
