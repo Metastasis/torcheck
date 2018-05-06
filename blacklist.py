@@ -4,7 +4,6 @@ from config import BLACKLIST_PATH
 class Blacklist:
     def __init__(self):
         self.data = {}
-        pass
 
     def load(self, pathname=None):
         path = pathname

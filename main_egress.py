@@ -136,6 +136,9 @@ if __name__ == "__main__":
     if not len(blacklist):
         raise ValueError("Blacklist is empty. You have to specify blacklisted IP addresses")
 
+    print('peers: ', KNOWN_PEERS)
+    print('blacklist: ', blacklist.data)
+
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
 
