@@ -4,7 +4,8 @@ from dpkt.ip import IP, IP_LEN_MAX
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str  # , save_connections
 from blacklist import Blacklist
-from ip_options import IPOption, append_options
+from track.client_log import ClientLog
+from datetime import datetime
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -28,7 +29,9 @@ TRACKED_CLIENTS = [
 def egress_loop(packet):
     global connections
     global blacklist
+    global client_log
 
+    now = datetime.now()
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
 
@@ -54,15 +57,13 @@ def egress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    can_modify = transport.seq > 0 and transport.ack > 0
-    if can_modify:
-        if network.rf:
-            print('got RF set')
-        elif dst_ip in KNOWN_PEERS:
-            print('no RF, setting...')
-            network.rf = 1
-            network.sum = 0
-            packet.set_payload(bytes(network))
+    tracked_client_arrived = client_log.arrived_near(now)
+    # if network.rf or (tracked_client_arrived and dst_ip in KNOWN_PEERS):
+    if tracked_client_arrived and dst_ip in KNOWN_PEERS:
+        print('no RF, setting...')
+        network.rf = 1
+        network.sum = 0
+        packet.set_payload(bytes(network))
 
     if transport.dport not in [80]:
         packet.accept()
@@ -105,6 +106,7 @@ def egress_loop(packet):
 
 
 if __name__ == "__main__":
+    client_log = ClientLog()
     blacklist = Blacklist()
     blacklist.load()
 

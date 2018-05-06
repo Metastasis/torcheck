@@ -1,9 +1,8 @@
-from dpkt.dpkt import in_cksum
 from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
 from utils import inet_to_str
-from blacklist import Blacklist
-from ip_options import IPOption, append_options
+from track.client_log import ClientLog
+from datetime import datetime
 
 LIBNETFILTER_QUEUE_NUM = 2
 
@@ -23,6 +22,7 @@ TRACKED_CLIENTS = [
     '10.0.10.5'
 ]
 
+
 # option_address = b'\x00\x00\x00\x00'  # address
 # option_timestamp = b'\x00\x00\x00\x00'  # timestamp
 # padding = size of options - (0x0C + 0x01)
@@ -30,7 +30,9 @@ TRACKED_CLIENTS = [
 
 def ingress_loop(packet):
     global connections
+    global client_log
 
+    now = datetime.now()
     network = IP(packet.get_payload())
     transport = network.data
 
@@ -54,15 +56,10 @@ def ingress_loop(packet):
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    can_modify = transport.seq > 0 and transport.ack > 0
-    if can_modify:
-        if network.rf:
-            print('got RF set')
-        elif src_ip in KNOWN_PEERS:
-            print('found tracked user, setting RF...')
-            network.rf = 1
-            network.sum = 0
-            packet.set_payload(bytes(network))
+    # can_modify = transport.seq > 0 and transport.ack > 0
+    if network.rf or src_ip in TRACKED_CLIENTS:
+        print('got RF set, logging into file...')
+        client_log.log(network, now)
 
     # try:
     #     stream = connections[flow]
@@ -89,8 +86,7 @@ def ingress_loop(packet):
 
 
 if __name__ == "__main__":
-    blacklist = Blacklist()
-    blacklist.load()
+    client_log = ClientLog()
 
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
