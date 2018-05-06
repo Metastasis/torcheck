@@ -34,9 +34,7 @@ class ClientLog:
                 return True
         return False
 
-    def log(self, dpkt_ip, date=datetime.now()):
-        if not dpkt_ip.rf:
-            return False
+    def log(self, date=datetime.now()):
         with open(CLIENTLOG_PATH, 'a') as f:
             line = date.strftime(self.DATE_FORMAT)
             f.write(line)
