@@ -87,7 +87,12 @@ def egress_loop(packet):
         print()
 
         if bad_host in blacklist:
-            print('[drop] blacklisted host: {}, IP: {}, IP (blacklist): {}'.format(bad_host, dst_ip, bad_ip))
+            print('[drop] blacklisted host: {}, IP: {}, IP (blacklist): {}, our client: {}'.format(
+                bad_host,
+                dst_ip,
+                bad_ip,
+                tracked_client_arrived
+            ))
             del connections[flow]
             return packet.drop()
 
