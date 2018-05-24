@@ -1,4 +1,5 @@
 class BaseConfig:
+    # TODO: add files in data folder to .gitignore
     def __init__(self, filename):
         self.PATH_TO_CONFIG = filename
         self.data = []
