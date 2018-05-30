@@ -1,6 +1,7 @@
 import socket
 from dpkt.ip import IP
 from random import randrange
+import struct
 
 
 def modify_pkt_rnd(net_packet):
@@ -41,6 +42,18 @@ def inet_to_str(inet):
         return socket.inet_ntop(socket.AF_INET, inet)
     except ValueError:
         return socket.inet_ntop(socket.AF_INET6, inet)
+
+
+def str_to_inet(ip_addr):
+    """Convert string to int ip
+
+        Args:
+            ip_addr: IP address as a string
+        Returns:
+            int: IP address in integer format
+    """
+    return socket.inet_aton(ip_addr)
+
 
 def dump(fp, stream):
     if not fp:

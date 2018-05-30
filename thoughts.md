@@ -21,3 +21,4 @@ Encapsulate packet decisions logic in class.
 
 - add incremental\diff updates of blacklist
 - write tests
+- dont split files by roles; but mention it in vkr
