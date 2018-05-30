@@ -1,9 +1,11 @@
 from config import BLACKLIST_PATH
+from utils import is_valid_ipv4_address
 
 
 class Blacklist:
     def __init__(self):
         self.data = {}
+        self.ips = {}
 
     def load(self, pathname=None):
         path = pathname
@@ -19,6 +21,8 @@ class Blacklist:
                 url, ip_list = self._parse(line)
 
                 self.data[url] = ip_list
+                for ip in ip_list:
+                    self.ips[ip] = True
 
     def save(self):
         if not len(self.data.keys()):
@@ -42,6 +46,8 @@ class Blacklist:
         return len(self.data)
 
     def __contains__(self, key):
+        if is_valid_ipv4_address(key):
+            return key in self.ips
         return key in self.data
 
     def has(self, key):

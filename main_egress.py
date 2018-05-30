@@ -68,7 +68,7 @@ def egress_loop(packet):
         network.sum = 0
         packet.set_payload(bytes(network))
 
-    if transport.dport not in [80]:
+    if transport.dport not in [80, 443]:
         packet.accept()
         # if is_marked: print(packet.get_payload())
         return
@@ -84,10 +84,9 @@ def egress_loop(packet):
         #     bad_ip = 'not listed'
 
         bad_host = http.headers['host']
-
         print(flow)
 
-        if tracked_client_arrived and bad_host in blacklist:
+        if tracked_client_arrived and (bad_host in blacklist or dst_ip in blacklist):
             print('[drop] blacklisted host: {}, IP: {}'.format(
                 bad_host,
                 dst_ip

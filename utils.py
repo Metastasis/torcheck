@@ -55,6 +55,28 @@ def str_to_inet(ip_addr):
     return socket.inet_aton(ip_addr)
 
 
+def is_valid_ipv4_address(address):
+    """Checks whatever address is valid IPv4 string
+
+        Args:
+            address: IP address as a string
+        Returns:
+            bool: True if address is valid IPv4
+    """
+    try:
+        socket.inet_pton(socket.AF_INET, address)
+    except AttributeError:  # no inet_pton here, sorry
+        try:
+            socket.inet_aton(address)
+        except socket.error:
+            return False
+        return address.count('.') == 3
+    except socket.error:  # not a valid address
+        return False
+
+    return True
+
+
 def dump(fp, stream):
     if not fp:
         return None
