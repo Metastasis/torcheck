@@ -73,6 +73,9 @@ def egress_loop(packet):
         # if is_marked: print(packet.get_payload())
         return
 
+    if tracked_client_arrived and (dst_ip in blacklist.ips or src_ip in blacklist.ips):
+        print('got ip address, dst {} or src {}'.format(dst_ip, src_ip))
+
     try:
         stream = connections[flow]
         http = Request(stream)
@@ -86,8 +89,6 @@ def egress_loop(packet):
         bad_host = http.headers['host']
         print(flow)
 
-        if tracked_client_arrived and (dst_ip in blacklist.ips or src_ip in blacklist.ips):
-            print('got ip address, dst {} or src {}'.format(dst_ip, src_ip))
         if tracked_client_arrived and (bad_host in blacklist or dst_ip in blacklist.ips):
             print('[drop] blacklisted host: {}, IP: {}'.format(
                 bad_host,
