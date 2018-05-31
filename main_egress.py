@@ -86,9 +86,9 @@ def egress_loop(packet):
         bad_host = http.headers['host']
         print(flow)
 
-        if tracked_client_arrived and (dst_ip in blacklist.ips or src_ip in blacklist.ips):
+        if tracked_client_arrived and (dst_ip in blacklist or src_ip in blacklist):
             print('got ip address, dst {} or src {}'.format(dst_ip, src_ip))
-        if tracked_client_arrived and (bad_host in blacklist or dst_ip in blacklist.ips):
+        if tracked_client_arrived and (bad_host in blacklist or dst_ip in blacklist):
             print('[drop] blacklisted host: {}, IP: {}'.format(
                 bad_host,
                 dst_ip
