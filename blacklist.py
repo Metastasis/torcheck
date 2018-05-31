@@ -47,8 +47,6 @@ class Blacklist:
 
     def __contains__(self, key):
         if is_valid_ipv4_address(key):
-            print('checking ipv4')
-            print(key in self.ips)
             return key in self.ips
         return key in self.data
 
