@@ -70,8 +70,12 @@ def egress_loop(packet):
 
     if transport.dport not in [80, 443]:
         packet.accept()
-        # if is_marked: print(packet.get_payload())
         return
+
+    if transport.dport == 443 and tracked_client_arrived:
+        print('tracked client arrived & found 443 port')
+        print('IP is {}'.format(dst_ip))
+        print()
 
     try:
         stream = connections[flow]
