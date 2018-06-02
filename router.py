@@ -16,7 +16,7 @@ TRACKED_CLIENTS = [
     '10.0.10.5'
 ]
 
-TOR_PEERS = [
+TOR_PEERS = KNOWN_PEERS + [
     '5.9.253.234',
     '195.254.134.194',
     '173.68.137.9',
@@ -45,6 +45,7 @@ def ingress_loop(packet):
         return packet.accept()
     if not is_tor(network):
         return packet.accept()
+    print('tracked client trying connect to tor')
     network.rf = 1
     if dst_ip in KNOWN_PEERS:
         raw_packet = update_cksum(network)
