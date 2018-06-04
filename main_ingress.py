@@ -9,7 +9,7 @@ from config import TRACKED_CLIENTS_PATH
 
 LIBNETFILTER_QUEUE_NUM = 2
 
-connections = {}
+connection_flows = {}
 
 MARKER = b'\x66\x66\x66\x66'
 MARKER_LEN = len(MARKER)
@@ -31,10 +31,7 @@ TRACKED_CLIENTS = [
 # padding = size of options - (0x0C + 0x01)
 
 
-def ingress_loop(packet):
-    global connections
-    global client_log
-
+def ingress_loop(packet, client_logger, connections):
     now = datetime.now()
     network = IP(packet.get_payload())
     transport = network.data
@@ -62,7 +59,7 @@ def ingress_loop(packet):
     # can_modify = transport.seq > 0 and transport.ack > 0
     if network.rf or src_ip in TRACKED_CLIENTS:
         print('got RF set, logging into file...')
-        client_log.log(now)
+        client_logger.log(now)
 
     # try:
     #     stream = connections[flow]
@@ -88,6 +85,13 @@ def ingress_loop(packet):
     return packet.accept()
 
 
+def ingress_loop_wrapper(client_logger, connections):
+    def _loop(packet):
+        ingress_loop(packet, client_logger, connections)
+
+    return _loop
+
+
 if __name__ == "__main__":
     TRACKED_CLIENTS = []
     parser = get_args_for_ingress()
@@ -96,9 +100,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     client_log.clean()
 
-    tracked_cfg = BaseConfig(TRACKED_CLIENTS_PATH)
+    tracked_cfg = BaseConfig()
     if args.clients is None:
-        tracked_cfg.load()
+        tracked_cfg.load(TRACKED_CLIENTS_PATH)
     else:
         tracked_cfg.load(args.clients)
         if len(tracked_cfg.data):
@@ -111,8 +115,9 @@ if __name__ == "__main__":
             You have to specify IP addresses of clients that has to be tracked
         """)
 
+    loop = ingress_loop_wrapper(client_log, connection_flows)
     nfqueue = NetfilterQueue()
-    nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
+    nfqueue.bind(LIBNETFILTER_QUEUE_NUM, loop)
 
     try:
         print("[*] waiting for data")
