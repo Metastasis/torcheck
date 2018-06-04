@@ -19,24 +19,18 @@ class TestBaseConfig(TestCase):
         except Exception as e:
             print('Exception has been occurred while clearing file "{}":'.format(self.SAVE_CONFIG_PATH))
 
-    def test_load_with_default_filename(self):
-        config = BaseConfig(self.LOAD_CONFIG_PATH)
-        config.load()
-        loaded = config.data
-        self.assertListEqual(self.result, loaded)
-
-    def test_load_with_filename(self):
+    def test_load(self):
         config = BaseConfig()
         config.load(self.LOAD_CONFIG_PATH)
         loaded = config.data
         self.assertListEqual(self.result, loaded)
 
     def test_save(self):
-        config = BaseConfig(self.SAVE_CONFIG_PATH)
+        config = BaseConfig()
         config.data = self.result
-        config.save()
-        loaded_config = BaseConfig(self.SAVE_CONFIG_PATH)
-        loaded_config.load()
+        config.save(self.SAVE_CONFIG_PATH)
+        loaded_config = BaseConfig()
+        loaded_config.load(self.SAVE_CONFIG_PATH)
         loaded = loaded_config.data
         self.assertListEqual(self.result, loaded)
 

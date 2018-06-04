@@ -116,13 +116,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    peers_cfg = BaseConfig(PEERS_PATH)
+    peers_cfg = BaseConfig()
     if args.peers is None:
-        peers_cfg.load()
+        peers_cfg.load(PEERS_PATH)
     else:
         peers_cfg.load(args.peers)
         if len(peers_cfg.data):
-            peers_cfg.save()
+            peers_cfg.save(PEERS_PATH)
 
     KNOWN_PEERS = peers_cfg.data
     if not len(KNOWN_PEERS):

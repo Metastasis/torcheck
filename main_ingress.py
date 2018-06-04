@@ -106,7 +106,7 @@ if __name__ == "__main__":
     else:
         tracked_cfg.load(args.clients)
         if len(tracked_cfg.data):
-            tracked_cfg.save()
+            tracked_cfg.save(TRACKED_CLIENTS_PATH)
 
     TRACKED_CLIENTS = tracked_cfg.data
     if not len(TRACKED_CLIENTS):
