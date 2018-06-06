@@ -41,15 +41,6 @@ def get_args_for_ingress():
         prog='python main_ingress.py',
         description='Filter tor clients traffic from certain users'
     )
-    parser.add_argument(
-        '--clients-file',
-        dest='clients',
-        default=None,
-        help="""
-        Path to file with clients that has to be tracked.
-        Traffic from these clients will be marked and analyzed against blacklist
-        """
-    )
     return parser
 
 
