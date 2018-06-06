@@ -17,11 +17,7 @@ connections = {}
 KNOWN_PEERS = []
 
 
-def egress_loop(packet):
-    global connections
-    global blacklist
-    global client_log
-
+def egress_loop(packet, client_logger, blcklst, flows):
     now = datetime.now()
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
@@ -32,17 +28,19 @@ def egress_loop(packet):
     dst_ip = inet_to_str(network.dst)
     flow = (src_ip, transport.sport, dst_ip, transport.dport)
 
-    if flow in connections:
-        connections[flow] = connections[flow] + transport.data
+    if flow in flows:
+        flows[flow] = flows[flow] + transport.data
     else:
-        connections[flow] = transport.data
+        flows[flow] = transport.data
 
     flow_addresses = '{}:{},{}:{}'.format(src_ip, transport.sport, dst_ip, transport.dport)
     print(flow_addresses)
 
-    tracked_client_arrived = client_log.arrived_near(now)
+    tracked_client_arrived = client_logger.arrived_near(now)
     if tracked_client_arrived and dst_ip in KNOWN_PEERS:
         print('no RF, setting...')
+        now = datetime.now()
+        client_logger.log(now)
         network.rf = 1
         network.sum = 0
         packet.set_payload(bytes(network))
@@ -54,30 +52,37 @@ def egress_loop(packet):
         return
 
     try:
-        stream = connections[flow]
+        stream = flows[flow]
         http = Request(stream)
 
         bad_host = http.headers['host']
         print(flow)
 
-        if tracked_client_arrived and bad_host in blacklist:
+        if tracked_client_arrived and bad_host in blcklst:
             print('[drop] blacklisted host: {}, IP: {}'.format(
                 bad_host,
                 dst_ip
             ))
-            del connections[flow]
+            del flows[flow]
             return packet.drop()
 
         stream = stream[len(http):]
         if len(stream) == 0:
-            del connections[flow]
+            del flows[flow]
         else:
-            connections[flow] = stream
+            flows[flow] = stream
     except UnpackError:
         pass
 
     packet.accept()
     return
+
+
+def egress_loop_wrapper(client_logger, blcklst, flows):
+    def _loop(packet):
+        egress_loop(packet, client_logger, blcklst, flows)
+
+    return _loop
 
 
 if __name__ == "__main__":
@@ -110,8 +115,9 @@ if __name__ == "__main__":
     if not len(blacklist):
         raise ValueError("Blacklist is empty. You have to specify blacklisted IP addresses")
 
+    loop = egress_loop_wrapper(client_log, blacklist, connections)
     nfqueue = NetfilterQueue()
-    nfqueue.bind(LIBNETFILTER_QUEUE_NUM, egress_loop)
+    nfqueue.bind(LIBNETFILTER_QUEUE_NUM, loop)
 
     try:
         print("[*] waiting for data")
