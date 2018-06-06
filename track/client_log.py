@@ -1,6 +1,7 @@
 from config import CLIENTLOG_PATH
 from datetime import datetime, timedelta
 import pickle
+import os
 
 
 class ClientLog:
@@ -22,6 +23,8 @@ class ClientLog:
 
     def arrived_near(self, date):
         data = []
+        if os.path.getsize(CLIENTLOG_PATH) <= 0:
+            return False
         with open(CLIENTLOG_PATH, 'rb') as input:
             data = pickle.load(input)
         if not data or not len(data):
@@ -41,11 +44,10 @@ class ClientLog:
 
     def log(self, date=datetime.now()):
         data = []
-        with open(CLIENTLOG_PATH, 'rb') as input:
-            data = pickle.load(input)
-            if not data:
-                data = []
-            data.append([date, 0])
+        if os.path.getsize(CLIENTLOG_PATH) > 0:
+            with open(CLIENTLOG_PATH, 'rb') as input:
+                data = pickle.load(input)
+                data.append([date, 0])
         with open(CLIENTLOG_PATH, 'wb') as output:
             pickle.dump(data, output)
 
