@@ -19,7 +19,9 @@ class ClientLog:
         search_from = len(data) - first_marked
         rest_unmarked = data[search_from:]
         first_arrived_idx = next((k for k, v in enumerate(rest_unmarked) if v[1] == 0), None)
-        return search_from + (first_arrived_idx or 0)
+        if first_arrived_idx is None:
+            return None
+        return search_from + first_arrived_idx
 
     def arrived_near(self, date):
         data = []
