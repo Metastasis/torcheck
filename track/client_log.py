@@ -39,7 +39,7 @@ class ClientLog:
         [date, flag] = last_arrived[arrived_idx]
         last_arrived[arrived_idx] = [date, 1]
         with open(CLIENTLOG_PATH, 'wb') as output:
-            pickle.dump(last_arrived, output)
+            pickle.dump(last_arrived, output, pickle.HIGHEST_PROTOCOL)
         return True
 
     def log(self, date=datetime.now()):
@@ -49,7 +49,7 @@ class ClientLog:
                 data = pickle.load(input)
                 data.append([date, 0])
         with open(CLIENTLOG_PATH, 'wb') as output:
-            pickle.dump(data, output)
+            pickle.dump(data, output, pickle.HIGHEST_PROTOCOL)
 
     def clean(self):
         with open(CLIENTLOG_PATH, 'wb'):
