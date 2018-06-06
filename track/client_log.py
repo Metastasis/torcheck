@@ -21,27 +21,33 @@ class ClientLog:
         return search_from + first_arrived_idx
 
     def arrived_near(self, date):
+        data = []
         with open(CLIENTLOG_PATH, 'rb') as input:
             data = pickle.load(input)
-            time = date - self.ONE_MINUTE
-            last_arrived = [v for v in data if v[0] >= time]
-            if not len(last_arrived):
-                return False
-            arrived_idx = self.find_first_arrived(last_arrived)
-            if arrived_idx is None:
-                return False
-            [date, flag] = last_arrived[arrived_idx]
-            last_arrived[arrived_idx] = [date, 1]
-            with open(CLIENTLOG_PATH, 'wb') as output:
-                pickle.dump(last_arrived, output)
-            return True
+        if not data or not len(data):
+            return False
+        time = date - self.ONE_MINUTE
+        last_arrived = [v for v in data if v[0] >= time]
+        if not len(last_arrived):
+            return False
+        arrived_idx = self.find_first_arrived(last_arrived)
+        if arrived_idx is None:
+            return False
+        [date, flag] = last_arrived[arrived_idx]
+        last_arrived[arrived_idx] = [date, 1]
+        with open(CLIENTLOG_PATH, 'wb') as output:
+            pickle.dump(last_arrived, output)
+        return True
 
     def log(self, date=datetime.now()):
+        data = []
         with open(CLIENTLOG_PATH, 'rb') as input:
             data = pickle.load(input)
+            if not data:
+                data = []
             data.append([date, 0])
-            with open(CLIENTLOG_PATH, 'wb') as output:
-                pickle.dump(data, output)
+        with open(CLIENTLOG_PATH, 'wb') as output:
+            pickle.dump(data, output)
 
     def clean(self):
         with open(CLIENTLOG_PATH, 'wb'):
