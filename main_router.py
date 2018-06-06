@@ -1,24 +1,16 @@
 from netfilterqueue import NetfilterQueue
 from dpkt.ip import IP
-from ipaddress import ip_address
 from utils import inet_to_str, str_to_inet
 from arguments import get_args_for_router
 from configuration.base_config import BaseConfig
-from config import TRACKED_CLIENTS_PATH, PEERS_PATH
+from settings import TRACKED_CLIENTS_PATH, PEERS_PATH
 import random
 
 LIBNETFILTER_QUEUE_NUM = 1
 
-KNOWN_PEERS = [
-    # '10.0.10.4',
-    '10.0.10.6',
-    '10.0.10.7'
-]
+KNOWN_PEERS = []
 
-TRACKED_CLIENTS = [
-    '10.0.10.5',
-    '10.0.0.21'
-]
+TRACKED_CLIENTS = []
 
 TOR_PEERS = [
     '10.0.10.4',
@@ -28,8 +20,8 @@ TOR_PEERS = [
 
 
 def is_tor(dpkt_ip):
-    dst_ip = str(ip_address(dpkt_ip.dst))
-    if dst_ip in TOR_PEERS:
+    dst_ip = inet_to_str(dpkt_ip.dst)
+    if dst_ip in TOR_PEERS or dst_ip in TOR_PEERS:
         return True
     return False
 
@@ -50,7 +42,6 @@ def ingress_loop(packet):
         return packet.accept()
     print('tracked client trying connect to tor')
     network.rf = 1
-    # put mark in function
     if dst_ip in KNOWN_PEERS:
         raw_packet = update_cksum(network)
         packet.set_payload(raw_packet)

@@ -1,4 +1,4 @@
-from config import BLACKLIST_PATH
+from settings import BLACKLIST_PATH
 from utils import is_valid_ipv4_address
 
 
@@ -52,16 +52,3 @@ class Blacklist:
 
     def has(self, key):
         return self.__contains__(key)
-
-# if __name__ == '__main__':
-#     blacklist = Blacklist()
-#     blacklist.load()
-#     print('parimatch-go2.com' in blacklist.data)
-#     print('104.28.0.94' in blacklist.data)
-#     print('parimatch-go2.com' in blacklist)
-#     print('104.28.0.94' in blacklist)
-#     print(blacklist.has('parimatch-go2.com'))
-#     print(blacklist.has('104.28.0.94'))
-#     print('parimatc.com' in blacklist.data)
-#     print('parimatc.com' in blacklist)
-#     print(blacklist.has('104.28.3.94'))

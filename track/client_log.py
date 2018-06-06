@@ -1,4 +1,4 @@
-from config import CLIENTLOG_PATH
+from settings import CLIENTLOG_PATH
 from datetime import datetime, timedelta
 import pickle
 import os

@@ -1,4 +1,4 @@
-from config import NODES_PATH
+from settings import NODES_PATH
 from urllib.request import urlopen
 from utils import is_valid_ipv4_address
 
