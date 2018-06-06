@@ -10,4 +10,6 @@ CLIENTLOG_PATH = os.path.join(ROOT_DIR, os.path.normcase('data/client-log'))
 
 PEERS_PATH = os.path.join(ROOT_DIR, os.path.normcase('data/peers'))
 
+NODES_PATH = os.path.join(ROOT_DIR, os.path.normcase('data/nodes'))
+
 TRACKED_CLIENTS_PATH = os.path.join(ROOT_DIR, os.path.normcase('data/tracked-clients'))
