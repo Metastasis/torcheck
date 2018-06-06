@@ -47,6 +47,7 @@ def ingress_loop(packet):
         return packet.accept()
     print('tracked client trying connect to tor')
     network.rf = 1
+    # put mark in function
     if dst_ip in KNOWN_PEERS:
         raw_packet = update_cksum(network)
         packet.set_payload(raw_packet)

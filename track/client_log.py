@@ -1,50 +1,48 @@
 from config import CLIENTLOG_PATH
-from datetime import datetime
+from datetime import datetime, timedelta
+import pickle
 
 
 class ClientLog:
-    def __init__(self, recent_clients=5):
-        self.RECENT_CLIENTS = recent_clients
-        self.FIVE_SECONDS = 5
-        self.DATE_FORMAT = "%Y-%m-%d %H:%M:%S:%f"
+    def __init__(self):
+        self.ONE_MINUTE = timedelta(minutes=1)
 
-    def arrived_near(self, date=datetime.now()):
-        """
-        :param date: recent clients arrivals times will be checked against this date
-        :return: True if theres client that has been arrived recently
-        """
-        lines_read = 0
-        arrivals = []
-        # TODO: should somehow mark lines that has been used
-        with open(CLIENTLOG_PATH, 'r') as f:
-            last_n_lines = f.read().splitlines()[-self.RECENT_CLIENTS:]
-            for line in last_n_lines:
-                if not line:
-                    continue
-                lines_read = lines_read + 1
-                if lines_read > self.RECENT_CLIENTS:
-                    break
-                time = self._parse(line)
-                arrive_time = datetime.strptime(time, self.DATE_FORMAT)
-                arrivals.append(arrive_time)
-        for arrive in arrivals:
-            diff = date - arrive
-            diff = diff.total_seconds()
-            if diff >= 0 and diff <= self.FIVE_SECONDS:
-                return True
-        return False
+    def find_first_arrived(self, data):
+        copy = data.copy()
+        copy.reverse()
+        first_marked = next((k for k, v in enumerate(copy) if v[1] == 1), None)
+        if first_marked is None and len(data):
+            return len(data) - 1
+        if not len(data):
+            return None
+        search_from = len(data) - first_marked
+        rest_unmarked = data[search_from:]
+        first_arrived_idx = next((k for k, v in enumerate(rest_unmarked) if v[1] == 0), None)
+        return search_from + first_arrived_idx
+
+    def arrived_near(self, date):
+        with open(CLIENTLOG_PATH, 'rb') as input:
+            data = pickle.load(input)
+            time = date - self.ONE_MINUTE
+            last_arrived = [v for v in data if v[0] >= time]
+            if not len(last_arrived):
+                return False
+            arrived_idx = self.find_first_arrived(last_arrived)
+            if arrived_idx is None:
+                return False
+            [date, flag] = last_arrived[arrived_idx]
+            last_arrived[arrived_idx] = [date, 1]
+            with open(CLIENTLOG_PATH, 'wb') as output:
+                pickle.dump(last_arrived, output)
+            return True
 
     def log(self, date=datetime.now()):
-        with open(CLIENTLOG_PATH, 'a') as f:
-            line = date.strftime(self.DATE_FORMAT) + "\n"
-            f.write(line)
-        return True
+        with open(CLIENTLOG_PATH, 'rb') as input:
+            data = pickle.load(input)
+            data.append([date, 0])
+            with open(CLIENTLOG_PATH, 'wb') as output:
+                pickle.dump(data, output)
 
     def clean(self):
-        with open(CLIENTLOG_PATH, 'r') as f:
-            last_n_lines = f.read().splitlines()[-self.RECENT_CLIENTS:]
-        with open(CLIENTLOG_PATH, 'w') as f:
-            f.write('\n'.join(last_n_lines) + '\n')
-
-    def _parse(self, line):
-        return line
+        with open(CLIENTLOG_PATH, 'wb'):
+            pass

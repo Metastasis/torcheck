@@ -67,8 +67,10 @@ def egress_loop(packet):
         network.rf = 1
         network.sum = 0
         packet.set_payload(bytes(network))
+        packet.accept()
+        return
 
-    if transport.dport not in [80]:
+    if not tracked_client_arrived or transport.dport not in [80]:
         packet.accept()
         # if is_marked: print(packet.get_payload())
         return

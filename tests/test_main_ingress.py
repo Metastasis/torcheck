@@ -8,7 +8,17 @@ from track.client_log import ClientLog
 
 
 class PacketMock:
-    pass
+    def accept(self):
+        pass
+
+    def drop(self):
+        pass
+
+    def get_payload(self):
+        pass
+
+    def set_payload(self):
+        pass
 
 
 class TestMainIngress(TestCase):
