@@ -2,13 +2,13 @@ from dpkt.dpkt import UnpackError
 from dpkt.http import Request
 from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
-from utils import inet_to_str  # , save_connections
-from blacklist import Blacklist
-from track.client_log import ClientLog
+from torcheck.utils import inet_to_str  # , save_connections
+from torcheck.blacklist import Blacklist
+from torcheck.track.client_log import ClientLog
 from datetime import datetime
-from arguments import get_args_for_egress
-from configuration.base_config import BaseConfig
-from settings import PEERS_PATH
+from torcheck.arguments import get_args_for_egress
+from torcheck.configuration.base_config import BaseConfig
+from torcheck.settings import PEERS_PATH
 
 LIBNETFILTER_QUEUE_NUM = 1
 
@@ -85,7 +85,8 @@ def egress_loop_wrapper(client_logger, blcklst, flows):
     return _loop
 
 
-if __name__ == "__main__":
+def main():
+    global KNOWN_PEERS
     KNOWN_PEERS = []
     parser = get_args_for_egress()
     client_log = ClientLog()
@@ -126,3 +127,7 @@ if __name__ == "__main__":
         print("Terminated")
 
     nfqueue.unbind()
+
+
+if __name__ == "__main__":
+    main()

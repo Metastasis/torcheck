@@ -1,9 +1,9 @@
 from dpkt.ip import IP
 from netfilterqueue import NetfilterQueue
-from utils import inet_to_str
-from track.client_log import ClientLog
+from torcheck.utils import inet_to_str
+from torcheck.track.client_log import ClientLog
 from datetime import datetime
-from arguments import get_args_for_ingress
+from torcheck.arguments import get_args_for_ingress
 
 LIBNETFILTER_QUEUE_NUM = 2
 
@@ -41,11 +41,11 @@ def ingress_loop_wrapper(client_logger, connections):
     return _loop
 
 
-if __name__ == "__main__":
+def main():
     parser = get_args_for_ingress()
     client_log = ClientLog()
 
-    args = parser.parse_args()
+    parser.parse_args()
     client_log.clean()
 
     loop = ingress_loop_wrapper(client_log, connection_flows)
@@ -59,3 +59,7 @@ if __name__ == "__main__":
         print("Terminated")
 
     nfqueue.unbind()
+
+
+if __name__ == "__main__":
+    main()

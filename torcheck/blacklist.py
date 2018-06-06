@@ -1,5 +1,5 @@
-from settings import BLACKLIST_PATH
-from utils import is_valid_ipv4_address
+from torcheck.settings import BLACKLIST_PATH
+from torcheck.utils import is_valid_ipv4_address
 
 
 class Blacklist:

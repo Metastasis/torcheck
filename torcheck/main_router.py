@@ -1,9 +1,9 @@
 from netfilterqueue import NetfilterQueue
 from dpkt.ip import IP
-from utils import inet_to_str, str_to_inet
-from arguments import get_args_for_router
-from configuration.base_config import BaseConfig
-from settings import TRACKED_CLIENTS_PATH, PEERS_PATH
+from torcheck.utils import inet_to_str, str_to_inet
+from torcheck.arguments import get_args_for_router
+from torcheck.configuration.base_config import BaseConfig
+from torcheck.settings import TRACKED_CLIENTS_PATH, PEERS_PATH
 import random
 
 LIBNETFILTER_QUEUE_NUM = 1
@@ -53,7 +53,10 @@ def ingress_loop(packet):
     return packet.accept()
 
 
-if __name__ == "__main__":
+def main():
+    global TRACKED_CLIENTS
+    global KNOWN_PEERS
+
     parser = get_args_for_router()
     args = parser.parse_args()
 
@@ -68,9 +71,9 @@ if __name__ == "__main__":
     TRACKED_CLIENTS = tracked_cfg.data
     if not len(TRACKED_CLIENTS):
         raise ValueError("""
-            Tracked clients list is empty.
-            You have to specify IP addresses of clients that has to be tracked
-        """)
+                Tracked clients list is empty.
+                You have to specify IP addresses of clients that has to be tracked
+            """)
 
     peers_cfg = BaseConfig()
     if args.peers is None:
@@ -94,3 +97,7 @@ if __name__ == "__main__":
         print("Terminated")
 
     nfqueue.unbind()
+
+
+if __name__ == "__main__":
+    main()

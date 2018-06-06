@@ -1,6 +1,6 @@
-from settings import NODES_PATH
+from torcheck.settings import NODES_PATH
 from urllib.request import urlopen
-from utils import is_valid_ipv4_address
+from torcheck.utils import is_valid_ipv4_address
 
 
 class TorNodes:
