@@ -2,6 +2,9 @@ from netfilterqueue import NetfilterQueue
 from dpkt.ip import IP
 from ipaddress import ip_address
 from utils import inet_to_str, str_to_inet
+from arguments import get_args_for_router
+from configuration.base_config import BaseConfig
+from config import TRACKED_CLIENTS_PATH, PEERS_PATH
 import random
 
 LIBNETFILTER_QUEUE_NUM = 1
@@ -60,6 +63,36 @@ def ingress_loop(packet):
 
 
 if __name__ == "__main__":
+    parser = get_args_for_router()
+    args = parser.parse_args()
+
+    tracked_cfg = BaseConfig()
+    if args.clients is None:
+        tracked_cfg.load(TRACKED_CLIENTS_PATH)
+    else:
+        tracked_cfg.load(args.clients)
+        if len(tracked_cfg.data):
+            tracked_cfg.save(TRACKED_CLIENTS_PATH)
+
+    TRACKED_CLIENTS = tracked_cfg.data
+    if not len(TRACKED_CLIENTS):
+        raise ValueError("""
+            Tracked clients list is empty.
+            You have to specify IP addresses of clients that has to be tracked
+        """)
+
+    peers_cfg = BaseConfig()
+    if args.peers is None:
+        peers_cfg.load(PEERS_PATH)
+    else:
+        peers_cfg.load(args.peers)
+        if len(peers_cfg.data):
+            peers_cfg.save(PEERS_PATH)
+
+    KNOWN_PEERS = peers_cfg.data
+    if not len(KNOWN_PEERS):
+        raise ValueError("Known peers list is empty. You have to specify IP addresses of known peers")
+
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, ingress_loop)
 
