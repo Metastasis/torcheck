@@ -51,6 +51,13 @@ def egress_loop(packet, client_logger, blcklst, flows):
         packet.accept()
         return
 
+    if transport.dport == 443 and dst_ip in blcklst:
+        print('[drop] ssl blacklisted: IP: {}'.format(
+            dst_ip
+        ))
+        del flows[flow]
+        return packet.drop()
+
     try:
         stream = flows[flow]
         http = Request(stream)
@@ -58,8 +65,7 @@ def egress_loop(packet, client_logger, blcklst, flows):
         bad_host = http.headers['host']
         print(flow)
 
-        should_block = dst_ip in blcklst or bad_host in blcklst
-        if tracked_client_arrived and should_block:
+        if tracked_client_arrived and bad_host in blcklst:
             print('[drop] blacklisted host: {}, IP: {}'.format(
                 bad_host,
                 dst_ip
