@@ -88,8 +88,10 @@ def egress_loop(packet, client_logger, blcklst, flows, callback):
     except UnpackError:
         pass
 
-    callback(packet, network, False)
-    packet.accept()
+    if callback:
+        callback(packet, network, False)
+    else:
+        packet.accept()
     return
 
 
