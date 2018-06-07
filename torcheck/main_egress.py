@@ -17,7 +17,7 @@ connections = {}
 KNOWN_PEERS = []
 
 
-def egress_loop(packet, client_logger, blcklst, flows):
+def egress_loop(packet, client_logger, blcklst, flows, callback):
     now = datetime.now()
     raw_packet = packet.get_payload()
     network = IP(raw_packet)
@@ -52,11 +52,15 @@ def egress_loop(packet, client_logger, blcklst, flows):
         return
 
     if transport.dport == 443 and dst_ip in blcklst:
+        del flows[flow]
         print('[drop] ssl blacklisted: IP: {}'.format(
             dst_ip
         ))
-        del flows[flow]
-        return packet.drop()
+        if callback:
+            callback(packet, network, True)
+            return
+        else:
+            return packet.drop()
 
     try:
         stream = flows[flow]
@@ -71,8 +75,11 @@ def egress_loop(packet, client_logger, blcklst, flows):
                 dst_ip
             ))
             del flows[flow]
-            return packet.drop()
-
+            if callback:
+                callback(packet, network, True)
+                return
+            else:
+                return packet.drop()
         stream = stream[len(http):]
         if len(stream) == 0:
             del flows[flow]
@@ -81,49 +88,68 @@ def egress_loop(packet, client_logger, blcklst, flows):
     except UnpackError:
         pass
 
+    callback(packet, network, False)
     packet.accept()
     return
 
 
-def egress_loop_wrapper(client_logger, blcklst, flows):
+def egress_loop_wrapper(client_logger, blcklst, flows, callback):
     def _loop(packet):
-        egress_loop(packet, client_logger, blcklst, flows)
+        egress_loop(packet, client_logger, blcklst, flows, callback)
 
     return _loop
 
 
-def main():
+def main(known_peers=[], block_list=[], callback=None):
+    """Main function
+
+        Args:
+            known_peers: list of IP addresses of known tor peers
+            block_list: list of sites in format "<url>;<ip>"
+            callback: it will be called with before decision making with next arguments:
+            - NetfilterQueue packet object
+            - Parsed dpkt ip object
+            - Flag; True if packet should be blocked, otherwise False
+    """
     global KNOWN_PEERS
     KNOWN_PEERS = []
-    parser = get_args_for_egress()
     client_log = ClientLog()
     blacklist = Blacklist()
 
-    args = parser.parse_args()
-
-    peers_cfg = BaseConfig()
-    if args.peers is None:
-        peers_cfg.load(PEERS_PATH)
+    if callback:
+        KNOWN_PEERS = known_peers
+        if not len(KNOWN_PEERS):
+            raise ValueError("Known peers list is empty. You have to specify IP addresses of known peers")
+        blacklist.update_list(block_list)
+        if not len(blacklist):
+            raise ValueError("Blacklist is empty. You have to specify blacklisted IP addresses")
     else:
-        peers_cfg.load(args.peers)
-        if len(peers_cfg.data):
-            peers_cfg.save(PEERS_PATH)
+        parser = get_args_for_egress()
+        args = parser.parse_args()
 
-    KNOWN_PEERS = peers_cfg.data
-    if not len(KNOWN_PEERS):
-        raise ValueError("Known peers list is empty. You have to specify IP addresses of known peers")
+        peers_cfg = BaseConfig()
+        if args.peers is None:
+            peers_cfg.load(PEERS_PATH)
+        else:
+            peers_cfg.load(args.peers)
+            if len(peers_cfg.data):
+                peers_cfg.save(PEERS_PATH)
 
-    if args.blacklist is None:
-        blacklist.load()
-    else:
-        blacklist.load(args.blacklist)
-        if len(blacklist):
-            blacklist.save()
+        KNOWN_PEERS = peers_cfg.data
+        if not len(KNOWN_PEERS):
+            raise ValueError("Known peers list is empty. You have to specify IP addresses of known peers")
 
-    if not len(blacklist):
-        raise ValueError("Blacklist is empty. You have to specify blacklisted IP addresses")
+        if args.blacklist is None:
+            blacklist.load()
+        else:
+            blacklist.load(args.blacklist)
+            if len(blacklist):
+                blacklist.save()
 
-    loop = egress_loop_wrapper(client_log, blacklist, connections)
+        if not len(blacklist):
+            raise ValueError("Blacklist is empty. You have to specify blacklisted IP addresses")
+
+    loop = egress_loop_wrapper(client_log, blacklist, connections, callback)
     nfqueue = NetfilterQueue()
     nfqueue.bind(LIBNETFILTER_QUEUE_NUM, loop)
 

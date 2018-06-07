@@ -14,15 +14,7 @@ class Blacklist:
             path = BLACKLIST_PATH
 
         with open(path, 'r') as f:
-            for line in f.read().splitlines():
-                if not line:
-                    continue
-
-                url, ip_list = self._parse(line)
-
-                self.data[url] = ip_list
-                for ip in ip_list:
-                    self.ips[ip] = True
+            self.update_list(f.read().splitlines())
 
     def save(self):
         if not len(self.data.keys()):
@@ -33,14 +25,21 @@ class Blacklist:
         with open(BLACKLIST_PATH, 'w+') as f:
             f.write(lines)
 
+    def update_list(self, blacklist):
+        for line in blacklist:
+            if not line:
+                continue
+            url, ip_list = self._parse(line)
+
+            self.data[url] = ip_list
+            for ip in ip_list:
+                self.ips[ip] = True
+
     def _parse(self, line):
         url, all_ip = line.split(';')
         ip_list = all_ip.split(',')
 
         return url, ip_list
-
-    def _unpack(self, item):
-        pass
 
     def __len__(self):
         return len(self.data)
